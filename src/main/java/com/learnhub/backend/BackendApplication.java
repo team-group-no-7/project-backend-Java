@@ -1,4 +1,4 @@
-package com.group7.backend;
+package com.learnhub.backend;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
