@@ -70,6 +70,7 @@ Because Spring Security is active, all requests must be authenticated.
 Open your browser and navigate to one of the domain module status endpoints. The browser will prompt you for a username and password. Enter `admin` / `admin123`:
 
 * **Authentication Module**: [http://localhost:8080/api/auth/status](http://localhost:8080/api/auth/status)
+* **User Profile Module**: [http://localhost:8080/api/users/status](http://localhost:8080/api/users/status)
 * **Content Catalog Module**: [http://localhost:8080/api/catalog/status](http://localhost:8080/api/catalog/status)
 * **Billing Module**: [http://localhost:8080/api/billing/status](http://localhost:8080/api/billing/status)
 * **Mentorship Module**: [http://localhost:8080/api/mentorship/status](http://localhost:8080/api/mentorship/status)

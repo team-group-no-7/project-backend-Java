@@ -99,3 +99,14 @@ CREATE TABLE IF NOT EXISTS reviews (
     content_id BIGINT REFERENCES contents(id) ON DELETE CASCADE,
     session_id BIGINT REFERENCES doubt_sessions(id) ON DELETE CASCADE
 );
+
+-- 9. REFRESH_TOKENS Table (Auth Module)
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
+    token VARCHAR(255) UNIQUE NOT NULL,
+    expiry_date TIMESTAMP NOT NULL,
+    revoked BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+

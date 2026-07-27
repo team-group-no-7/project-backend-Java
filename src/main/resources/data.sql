@@ -33,3 +33,11 @@ ON CONFLICT (id) DO NOTHING;
 INSERT INTO discussion_replies (id, question_id, user_id, reply_text) VALUES
 (2001, 1001, 202, 'You can use JtaTransactionManager or configure chained transaction managers depending on the datastores.')
 ON CONFLICT (id) DO NOTHING;
+
+-- 6. Insert Seed Refresh Tokens (Auth Module)
+INSERT INTO refresh_tokens (id, user_id, token, expiry_date, revoked) VALUES
+(501, 101, 'sample-refresh-token-arjun-101', CURRENT_TIMESTAMP + INTERVAL '7 days', false),
+(502, 202, 'sample-refresh-token-rohan-202', CURRENT_TIMESTAMP + INTERVAL '7 days', false),
+(503, 303, 'sample-refresh-token-admin-303', CURRENT_TIMESTAMP + INTERVAL '7 days', false)
+ON CONFLICT (id) DO NOTHING;
+
