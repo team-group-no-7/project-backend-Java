@@ -15,31 +15,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
-/**
+/*
  * JwtAuthenticationFilter — Runs before every HTTP request to check for a valid JWT token.
- *
- * HOW IT WORKS:
- * 1. The React frontend sends every API request with this header:
- *    Authorization: Bearer eyJhbGciOiJIUzI1NiJ9...
- *
- * 2. This filter reads that header, extracts the token, validates it using JwtUtil.
- *
- * 3. If the token is valid:
- *    → It tells Spring Security "this user is authenticated" by setting the SecurityContext.
- *    → The request proceeds to the controller.
- *
- * 4. If the token is missing or invalid:
- *    → It does nothing (skips authentication).
- *    → Spring Security's default behavior blocks the request with 401 Unauthorized.
- *
- * WHY OncePerRequestFilter:
- * - Ensures this filter runs exactly once per request (not multiple times if forwarded).
- * - This is the standard base class for custom security filters in Spring.
- *
- * INTERVIEW TIP:
- * - "Our JWT filter sits before Spring Security's UsernamePasswordAuthenticationFilter.
- *    It converts the Bearer token into a Spring Security Authentication object,
- *    enabling role-based access control on protected endpoints."
  */
 @Component
 @RequiredArgsConstructor

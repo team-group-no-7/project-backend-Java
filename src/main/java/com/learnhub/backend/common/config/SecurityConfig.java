@@ -11,34 +11,12 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
 
-/**
+/*
  * SecurityConfig — The main Spring Security configuration for LearnHub.
- *
- * WHAT THIS FILE DOES:
- * 1. Disables CSRF (not needed for stateless JWT APIs)
- * 2. Makes the session STATELESS (each request carries its own JWT token)
- * 3. Defines which URLs are PUBLIC (no login needed) vs PROTECTED (JWT required)
- * 4. Adds our JwtAuthenticationFilter before Spring's default filter
- *
- * WHY CSRF IS DISABLED:
- * - CSRF protection is for cookie-based sessions (like JSP/Thymeleaf apps).
- * - Our React frontend sends JWT in the Authorization header, not cookies.
- * - So CSRF attacks are not possible in our architecture.
- *
- * WHY STATELESS SESSION:
- * - Traditional web apps store user sessions on the server (HttpSession).
- * - We don't do that. Each request carries a JWT token that contains all user info.
- * - The server doesn't remember anything between requests — that's "stateless".
- *
- * INTERVIEW TIP:
- * - "We configured Spring Security with stateless sessions because our frontend
- *    is a React SPA that communicates via REST APIs with JWT tokens.
- *    This makes the backend horizontally scalable — any server instance
- *    can handle any request without shared session storage."
  */
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity    // Enables @PreAuthorize("hasRole('ADMIN')") on controllers
+@EnableMethodSecurity    // It Enables @PreAuthorize("hasRole('ADMIN')") on controllers
 @RequiredArgsConstructor
 public class SecurityConfig {
 

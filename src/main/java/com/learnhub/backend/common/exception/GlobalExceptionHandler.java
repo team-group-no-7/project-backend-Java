@@ -11,16 +11,13 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
+/*
  * GlobalExceptionHandler — Centralized error handling across all controllers in LearnHub.
- *
- * Annotating with @RestControllerAdvice intercepts exceptions thrown anywhere in the controller layer
- * and returns clean, uniform JSON responses using ApiResponse.
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    /**
+    /*
      * Handle ResourceNotFoundException (404 NOT FOUND)
      */
     @ExceptionHandler(ResourceNotFoundException.class)
@@ -29,7 +26,7 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(ex.getMessage()));
     }
 
-    /**
+    /*
      * Handle BadRequestException (400 BAD REQUEST)
      */
     @ExceptionHandler(BadRequestException.class)
@@ -38,7 +35,7 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(ex.getMessage()));
     }
 
-    /**
+    /*
      * Handle DTO validation failures (@Valid annotations like @NotBlank, @Email)
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -61,7 +58,7 @@ public class GlobalExceptionHandler {
                         .build());
     }
 
-    /**
+    /*
      * Handle generic RuntimeExceptions (400 BAD REQUEST default)
      */
     @ExceptionHandler(RuntimeException.class)
@@ -70,7 +67,7 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(ex.getMessage()));
     }
 
-    /**
+    /*
      * Catch-all handler for unexpected errors (500 INTERNAL SERVER ERROR)
      */
     @ExceptionHandler(Exception.class)

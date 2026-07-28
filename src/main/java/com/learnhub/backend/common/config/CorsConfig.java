@@ -8,24 +8,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
-/**
+/*
  * CorsConfig — Allows the React frontend to communicate with this Spring Boot backend.
- *
- * WHAT IS CORS:
- * - CORS = Cross-Origin Resource Sharing
- * - By default, browsers block requests from one origin (localhost:5173)
- *   to another origin (localhost:8080) for security reasons.
- * - This configuration tells Spring Boot: "Allow requests from our React app."
- *
- * WITHOUT THIS FILE:
- * - The React frontend would get this browser error:
- *   "Access to XMLHttpRequest at 'http://localhost:8080/api/auth/login'
- *    from origin 'http://localhost:5173' has been blocked by CORS policy"
- *
- * INTERVIEW TIP:
- * - "CORS is a browser-level security mechanism. It doesn't affect Postman or
- *    server-to-server calls. We configured it to allow our React frontend's
- *    origin while keeping other origins blocked."
  */
 @Configuration
 public class CorsConfig {
