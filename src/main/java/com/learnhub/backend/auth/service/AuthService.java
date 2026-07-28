@@ -5,6 +5,8 @@ import com.learnhub.backend.auth.dto.LoginRequest;
 import com.learnhub.backend.auth.dto.RegisterRequest;
 import com.learnhub.backend.auth.entity.RefreshToken;
 import com.learnhub.backend.auth.repository.RefreshTokenRepository;
+import com.learnhub.backend.common.exception.BadRequestException;
+import com.learnhub.backend.common.exception.ResourceNotFoundException;
 import com.learnhub.backend.common.util.JwtUtil;
 import com.learnhub.backend.user.entity.User;
 import com.learnhub.backend.user.repository.UserRepository;
@@ -64,14 +66,14 @@ public class AuthService {
      *
      * @param request contains name, email, password from the registration form
      * @return AuthResponse with JWT token and user details
-     * @throws RuntimeException if email is already registered
+     * @throws BadRequestException if email is already registered
      */
     @Transactional
     public AuthResponse register(RegisterRequest request) {
 
         // Step 1: Check if email already exists
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already registered");
+            throw new BadRequestException("Email already registered");
         }
 
         // Step 2: Build a new User entity with hashed password
@@ -115,19 +117,19 @@ public class AuthService {
      *
      * @param request contains email and password from the login form
      * @return AuthResponse with JWT token and user details
-     * @throws RuntimeException if email not found or password is wrong
+     * @throws BadRequestException if email not found or password is wrong
      */
     @Transactional
     public AuthResponse login(LoginRequest request) {
 
         // Step 1: Find user by email — throw error if not found
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+                .orElseThrow(() -> new BadRequestException("Invalid email or password"));
 
         // Step 2: Compare plain password with stored BCrypt hash
         // passwordEncoder.matches("pass123", "$2a$10$abc...") → true/false
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid email or password");
+            throw new BadRequestException("Invalid email or password");
         }
 
         // Step 3: Generate JWT token
@@ -158,28 +160,28 @@ public class AuthService {
      *
      * @param token the refresh token string sent by the frontend
      * @return AuthResponse with a new JWT token
-     * @throws RuntimeException if refresh token is invalid, expired, or revoked
+     * @throws BadRequestException if refresh token is invalid, expired, or revoked
      */
     @Transactional
     public AuthResponse refreshToken(String token) {
 
         // Step 1: Find the refresh token in database
         RefreshToken refreshToken = refreshTokenRepository.findByToken(token)
-                .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
+                .orElseThrow(() -> new BadRequestException("Invalid refresh token"));
 
         // Step 2: Check if token is revoked (user logged out)
         if (refreshToken.getRevoked()) {
-            throw new RuntimeException("Refresh token has been revoked");
+            throw new BadRequestException("Refresh token has been revoked");
         }
 
         // Step 3: Check if token is expired
         if (refreshToken.getExpiryDate().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("Refresh token has expired");
+            throw new BadRequestException("Refresh token has expired");
         }
 
         // Step 4: Find the user who owns this token
         User user = userRepository.findById(refreshToken.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         // Step 5: Generate a new JWT token
         String newJwtToken = jwtUtil.generateToken(user.getEmail(), user.getRole());
@@ -211,7 +213,7 @@ public class AuthService {
 
         // Find the refresh token and mark it as revoked
         RefreshToken refreshToken = refreshTokenRepository.findByToken(token)
-                .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
+                .orElseThrow(() -> new BadRequestException("Invalid refresh token"));
 
         refreshToken.setRevoked(true);
         refreshTokenRepository.save(refreshToken);
