@@ -2,6 +2,7 @@ package com.learnhub.backend.catalog.service;
 
 import com.learnhub.backend.catalog.dto.CreateContentRequest;
 import com.learnhub.backend.catalog.dto.ContentResponse;
+import com.learnhub.backend.catalog.dto.UpdateContentRequest;
 import com.learnhub.backend.catalog.entity.Category;
 import com.learnhub.backend.catalog.entity.Content;
 import com.learnhub.backend.catalog.repository.CategoryRepository;
@@ -15,11 +16,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.*;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
- * CreatorContentService — Business logic for Content Authoring Studio (Publishing Articles & PDF Resources).
+ * CreatorContentService — Business logic for Content Authoring Studio and Creator Resource Management Grid.
  *
+ * Handles publishing, editing, status toggling (DRAFT/PUBLISHED), and deleting resources.
  * Implemented in pure Java with explicit constructor dependency injection (no Lombok).
  */
 @Service
@@ -43,9 +47,6 @@ public class CreatorContentService {
 
     /**
      * Publish Rich Text WYSIWYG Article or Generic Content Resource.
-     *
-     * @param request CreateContentRequest carrying article metadata and contentBody
-     * @return ContentResponse containing saved resource details
      */
     @Transactional
     public ContentResponse publishContent(CreateContentRequest request) {
@@ -85,17 +86,6 @@ public class CreatorContentService {
 
     /**
      * Upload PDF File Resource and save to server disk storage.
-     *
-     * @param file uploaded MultipartFile
-     * @param title resource title
-     * @param description resource description
-     * @param price resource price
-     * @param level difficulty level
-     * @param tags search tags
-     * @param status DRAFT or PUBLISHED
-     * @param categoryId category ID
-     * @param creatorId creator user ID
-     * @return ContentResponse
      */
     @Transactional
     public ContentResponse uploadPdfResource(
@@ -109,15 +99,12 @@ public class CreatorContentService {
             Long categoryId,
             Long creatorId) {
 
-        // Step 1: Validate file presence
         if (file == null || file.isEmpty()) {
             throw new BadRequestException("PDF file cannot be empty");
         }
 
-        // Step 2: Save PDF file to disk
         String fileUrl = storeFileLocally(file);
 
-        // Step 3: Construct CreateContentRequest
         CreateContentRequest request = new CreateContentRequest();
         request.setTitle(title);
         request.setDescription(description);
@@ -131,6 +118,113 @@ public class CreatorContentService {
         request.setCreatorId(creatorId);
 
         return publishContent(request);
+    }
+
+    /**
+     * Fetch all learning resources created by a specific creator (for Management Grid).
+     *
+     * @param creatorId the creator user ID
+     * @return List of ContentResponse objects
+     */
+    public List<ContentResponse> getCreatorContents(Long creatorId) {
+        userRepository.findById(creatorId)
+                .orElseThrow(() -> new ResourceNotFoundException("Creator not found with id: " + creatorId));
+
+        return contentRepository.findByCreatorId(creatorId)
+                .stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Update/Edit existing content resource details (Title, Description, Rich Text HTML, Price, Level, Tags, Status).
+     *
+     * @param contentId the ID of the content to update
+     * @param request UpdateContentRequest containing updated fields
+     * @return updated ContentResponse DTO
+     */
+    @Transactional
+    public ContentResponse updateContent(Long contentId, UpdateContentRequest request) {
+        Content content = contentRepository.findById(contentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Content not found with id: " + contentId));
+
+        if (request.getTitle() != null && !request.getTitle().trim().isEmpty()) {
+            content.setTitle(request.getTitle());
+        }
+        if (request.getDescription() != null) {
+            content.setDescription(request.getDescription());
+        }
+        if (request.getPreviewText() != null) {
+            content.setPreviewText(request.getPreviewText());
+        }
+        if (request.getContentBody() != null) {
+            content.setContentBody(request.getContentBody());
+        }
+        if (request.getFileUrl() != null) {
+            content.setFileUrl(request.getFileUrl());
+        }
+        if (request.getPrice() != null) {
+            content.setPrice(request.getPrice());
+        }
+        if (request.getType() != null) {
+            content.setType(request.getType());
+        }
+        if (request.getLevel() != null) {
+            content.setLevel(request.getLevel());
+        }
+        if (request.getTags() != null) {
+            content.setTags(request.getTags());
+        }
+        if (request.getStatus() != null) {
+            content.setStatus(request.getStatus());
+        }
+        if (request.getCategoryId() != null) {
+            categoryRepository.findById(request.getCategoryId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + request.getCategoryId()));
+            content.setCategoryId(request.getCategoryId());
+        }
+
+        Content updatedContent = contentRepository.save(content);
+        return mapToResponse(updatedContent);
+    }
+
+    /**
+     * Toggle content status between DRAFT and PUBLISHED.
+     *
+     * @param contentId the ID of the content
+     * @param status target status string ("DRAFT" or "PUBLISHED")
+     * @return updated ContentResponse DTO
+     */
+    @Transactional
+    public ContentResponse updateContentStatus(Long contentId, String status) {
+        Content content = contentRepository.findById(contentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Content not found with id: " + contentId));
+
+        content.setStatus(status);
+        Content updatedContent = contentRepository.save(content);
+        return mapToResponse(updatedContent);
+    }
+
+    /**
+     * Delete a learning resource and update category resource count.
+     *
+     * @param contentId the ID of the content to delete
+     */
+    @Transactional
+    public void deleteContent(Long contentId) {
+        Content content = contentRepository.findById(contentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Content not found with id: " + contentId));
+
+        // Decrement resource count on category if present
+        if (content.getCategoryId() != null) {
+            categoryRepository.findById(content.getCategoryId()).ifPresent(category -> {
+                int currentCount = category.getResourceCount() == null ? 0 : category.getResourceCount();
+                category.setResourceCount(Math.max(0, currentCount - 1));
+                categoryRepository.save(category);
+            });
+        }
+
+        contentRepository.delete(content);
     }
 
     /**
