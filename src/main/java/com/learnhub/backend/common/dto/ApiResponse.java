@@ -1,10 +1,5 @@
 package com.learnhub.backend.common.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 /**
  * ApiResponse — Standardized JSON response wrapper used by ALL controllers.
  *
@@ -23,11 +18,10 @@ import lombok.NoArgsConstructor;
  * USAGE:
  *   return ResponseEntity.ok(ApiResponse.success("Login successful", authResponse));
  *   return ResponseEntity.badRequest().body(ApiResponse.error("Email already registered"));
+ *
+ * IMPLEMENTATION NOTE (CDAC PGCP-AC):
+ * - Implemented in pure Java without Lombok to demonstrate core Java encapsulation principles.
  */
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class ApiResponse<T> {
 
     private boolean success;
@@ -35,24 +29,65 @@ public class ApiResponse<T> {
     private T data;
 
     /**
+     * Default Constructor (Required by Jackson for JSON deserialization)
+     */
+    public ApiResponse() {
+    }
+
+    /**
+     * Parameterized Constructor
+     */
+    public ApiResponse(boolean success, String message, T data) {
+        this.success = success;
+        this.message = message;
+        this.data = data;
+    }
+
+    // Getters and Setters
+    public boolean isSuccess() {
+        return success;
+    }
+
+    public void setSuccess(boolean success) {
+        this.success = success;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public T getData() {
+        return data;
+    }
+
+    public void setData(T data) {
+        this.data = data;
+    }
+
+    /**
      * Factory method for successful responses.
      */
     public static <T> ApiResponse<T> success(String message, T data) {
-        return ApiResponse.<T>builder()
-                .success(true)
-                .message(message)
-                .data(data)
-                .build();
+        return new ApiResponse<>(true, message, data);
     }
 
     /**
      * Factory method for error responses (no data payload).
      */
     public static <T> ApiResponse<T> error(String message) {
-        return ApiResponse.<T>builder()
-                .success(false)
-                .message(message)
-                .data(null)
-                .build();
+        return new ApiResponse<>(false, message, null);
+    }
+
+    @Override
+    public String toString() {
+        return "ApiResponse{" +
+                "success=" + success +
+                ", message='" + message + '\'' +
+                ", data=" + data +
+                '}';
     }
 }

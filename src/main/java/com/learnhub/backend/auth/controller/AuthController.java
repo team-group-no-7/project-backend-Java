@@ -7,7 +7,6 @@ import com.learnhub.backend.auth.dto.RegisterRequest;
 import com.learnhub.backend.auth.service.AuthService;
 import com.learnhub.backend.common.dto.ApiResponse;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,13 +16,20 @@ import org.springframework.web.bind.annotation.*;
  * Exposes REST API endpoints for user registration, login, token refresh, and logout.
  *
  * Base Path: /api/auth
+ *
+ * IMPLEMENTATION NOTE (CDAC PGCP-AC):
+ * Implemented using explicit Java constructor dependency injection (no Lombok).
  */
 @RestController
 @RequestMapping("/api/auth")
-@RequiredArgsConstructor
 public class AuthController {
 
     private final AuthService authService;
+
+    // Explicit constructor for dependency injection (no Lombok @RequiredArgsConstructor)
+    public AuthController(AuthService authService) {
+        this.authService = authService;
+    }
 
     /**
      * GET /api/auth/status

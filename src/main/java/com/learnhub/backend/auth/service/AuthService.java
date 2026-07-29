@@ -10,7 +10,6 @@ import com.learnhub.backend.common.exception.ResourceNotFoundException;
 import com.learnhub.backend.common.util.JwtUtil;
 import com.learnhub.backend.user.entity.User;
 import com.learnhub.backend.user.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,9 +35,11 @@ import java.util.UUID;
  * - AuthService needs UserRepository from the "user" module.
  * - We inject it directly because we are still a monolith.
  * - If we extract auth into a microservice later, we replace this with a REST call.
+ *
+ * IMPLEMENTATION NOTE (CDAC PGCP-AC):
+ * Implemented using explicit Java constructor dependency injection (no Lombok).
  */
 @Service
-@RequiredArgsConstructor
 public class AuthService {
 
     // From user module — we need to save and find users
@@ -52,6 +53,17 @@ public class AuthService {
 
     // From common config — we need to hash and verify passwords
     private final PasswordEncoder passwordEncoder;
+
+    // Explicit constructor for dependency injection (no Lombok @RequiredArgsConstructor)
+    public AuthService(UserRepository userRepository,
+                       RefreshTokenRepository refreshTokenRepository,
+                       JwtUtil jwtUtil,
+                       PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.refreshTokenRepository = refreshTokenRepository;
+        this.jwtUtil = jwtUtil;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     /**
      * REGISTER — Create a new user account.
@@ -76,14 +88,13 @@ public class AuthService {
             throw new BadRequestException("Email already registered");
         }
 
-        // Step 2: Build a new User entity with hashed password
+        // Step 2: Build a new User entity using explicit setters
         // Role defaults to "LEARNER" — we don't let users choose ADMIN from the form!
-        User newUser = User.builder()
-                .name(request.getName())
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))  // Hash the password
-                .role("LEARNER")
-                .build();
+        User newUser = new User();
+        newUser.setName(request.getName());
+        newUser.setEmail(request.getEmail());
+        newUser.setPassword(passwordEncoder.encode(request.getPassword()));  // Hash the password
+        newUser.setRole("LEARNER");
 
         // Step 3: Save user to database — JPA auto-generates the ID
         User savedUser = userRepository.save(newUser);
@@ -94,15 +105,15 @@ public class AuthService {
         // Step 5: Create a refresh token for this user
         RefreshToken refreshToken = createRefreshToken(savedUser.getId());
 
-        // Step 6: Build and return the response
-        return AuthResponse.builder()
-                .token(jwtToken)
-                .refreshToken(refreshToken.getToken())
-                .id(savedUser.getId())
-                .name(savedUser.getName())
-                .email(savedUser.getEmail())
-                .role(savedUser.getRole())
-                .build();
+        // Step 6: Build and return the response using explicit constructor
+        return new AuthResponse(
+                jwtToken,
+                refreshToken.getToken(),
+                savedUser.getId(),
+                savedUser.getName(),
+                savedUser.getEmail(),
+                savedUser.getRole()
+        );
     }
 
     /**
@@ -138,15 +149,15 @@ public class AuthService {
         // Step 4: Create refresh token
         RefreshToken refreshToken = createRefreshToken(user.getId());
 
-        // Step 5: Build and return the response
-        return AuthResponse.builder()
-                .token(jwtToken)
-                .refreshToken(refreshToken.getToken())
-                .id(user.getId())
-                .name(user.getName())
-                .email(user.getEmail())
-                .role(user.getRole())
-                .build();
+        // Step 5: Build and return the response using explicit constructor
+        return new AuthResponse(
+                jwtToken,
+                refreshToken.getToken(),
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getRole()
+        );
     }
 
     /**
@@ -187,14 +198,14 @@ public class AuthService {
         String newJwtToken = jwtUtil.generateToken(user.getEmail(), user.getRole());
 
         // Step 6: Return response with new JWT (same refresh token stays valid)
-        return AuthResponse.builder()
-                .token(newJwtToken)
-                .refreshToken(refreshToken.getToken())
-                .id(user.getId())
-                .name(user.getName())
-                .email(user.getEmail())
-                .role(user.getRole())
-                .build();
+        return new AuthResponse(
+                newJwtToken,
+                refreshToken.getToken(),
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getRole()
+        );
     }
 
     /**
@@ -229,12 +240,12 @@ public class AuthService {
      * @return the saved RefreshToken entity
      */
     private RefreshToken createRefreshToken(Long userId) {
-        RefreshToken refreshToken = RefreshToken.builder()
-                .userId(userId)
-                .token(UUID.randomUUID().toString())
-                .expiryDate(LocalDateTime.now().plusDays(7))
-                .revoked(false)
-                .build();
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setUserId(userId);
+        refreshToken.setToken(UUID.randomUUID().toString());
+        refreshToken.setExpiryDate(LocalDateTime.now().plusDays(7));
+        refreshToken.setRevoked(false);
+
         return refreshTokenRepository.save(refreshToken);
     }
 }
