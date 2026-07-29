@@ -2,7 +2,6 @@ package com.learnhub.backend.auth.service;
 
 import com.learnhub.backend.auth.entity.RefreshToken;
 import com.learnhub.backend.auth.repository.RefreshTokenRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,12 +12,18 @@ import java.util.UUID;
 
 /**
  * AuthService — Business logic for Authentication, token issuance, and validation.
+ *
+ * Implemented in pure Java with explicit constructor dependency injection (no Lombok).
  */
 @Service
-@RequiredArgsConstructor
 public class AuthService {
 
     private final RefreshTokenRepository refreshTokenRepository;
+
+    // Explicit constructor for dependency injection (no Lombok @RequiredArgsConstructor)
+    public AuthService(RefreshTokenRepository refreshTokenRepository) {
+        this.refreshTokenRepository = refreshTokenRepository;
+    }
 
     public List<RefreshToken> getAllTokens() {
         return refreshTokenRepository.findAll();
@@ -26,12 +31,12 @@ public class AuthService {
 
     @Transactional
     public RefreshToken createRefreshToken(Long userId) {
-        RefreshToken refreshToken = RefreshToken.builder()
-                .userId(userId)
-                .token(UUID.randomUUID().toString())
-                .expiryDate(LocalDateTime.now().plusDays(7))
-                .revoked(false)
-                .build();
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setUserId(userId);
+        refreshToken.setToken(UUID.randomUUID().toString());
+        refreshToken.setExpiryDate(LocalDateTime.now().plusDays(7));
+        refreshToken.setRevoked(false);
+
         return refreshTokenRepository.save(refreshToken);
     }
 
