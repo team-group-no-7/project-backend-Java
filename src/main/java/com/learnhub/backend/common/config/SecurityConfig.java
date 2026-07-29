@@ -54,6 +54,7 @@ public class SecurityConfig {
                 // Status check endpoints
                 .requestMatchers("/api/users/status").permitAll()
                 .requestMatchers("/api/creators/status").permitAll()
+                .requestMatchers("/api/creator/content/status").permitAll()
                 .requestMatchers("/api/catalog/status").permitAll()
                 .requestMatchers("/api/billing/status").permitAll()
                 .requestMatchers("/api/mentorship/status").permitAll()

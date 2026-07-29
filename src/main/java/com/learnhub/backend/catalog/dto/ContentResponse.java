@@ -1,78 +1,40 @@
-package com.learnhub.backend.catalog.entity;
+package com.learnhub.backend.catalog.dto;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 /**
- * Content Entity — Maps to the CONTENTS table in the database.
- * Represents learning resources (courses, articles, video/PDF materials) created by creators.
+ * ContentResponse — DTO returning detailed content information after creation/fetch.
  *
  * Implemented in pure Java with explicit getters, setters, and constructors (no Lombok).
  */
-@Entity
-@Table(name = "contents")
-public class Content {
+public class ContentResponse {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(nullable = false)
     private String title;
-
-    @Column(columnDefinition = "TEXT")
     private String description;
-
-    @Column(name = "preview_text", columnDefinition = "TEXT")
     private String previewText;
-
-    @Column(name = "content_body", columnDefinition = "TEXT")
     private String contentBody;
-
-    @Column(name = "file_url")
     private String fileUrl;
-
-    @Column(name = "price")
-    private Double price = 0.00;
-
+    private Double price;
     private String type;
-
     private String level;
-
     private String tags;
-
-    @Column(name = "status")
-    private String status = "PUBLISHED"; // DRAFT or PUBLISHED
-
-    private Boolean featured = false;
-
-    @Column(name = "is_trending")
-    private Boolean isTrending = false;
-
-    @Column(name = "rating")
-    private Double rating = 0.00;
-
-    @Column(name = "reviews_count")
-    private Integer reviewsCount = 0;
-
-    @Column(name = "learners_count")
-    private Integer learnersCount = 0;
-
-    @Column(name = "category_id")
+    private String status;
+    private Boolean featured;
+    private Boolean isTrending;
+    private Double rating;
+    private Integer reviewsCount;
+    private Integer learnersCount;
     private Long categoryId;
-
-    @Column(name = "creator_id")
     private Long creatorId;
-
-    @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    // Default Constructor (Required by JPA/Hibernate)
-    public Content() {
+    // Default Constructor (Required by Jackson for JSON serialization)
+    public ContentResponse() {
     }
 
     // Full Parameterized Constructor
-    public Content(Long id, String title, String description, String previewText, String contentBody, String fileUrl, Double price, String type, String level, String tags, String status, Boolean featured, Boolean isTrending, Double rating, Integer reviewsCount, Integer learnersCount, Long categoryId, Long creatorId, LocalDateTime createdAt) {
+    public ContentResponse(Long id, String title, String description, String previewText, String contentBody, String fileUrl, Double price, String type, String level, String tags, String status, Boolean featured, Boolean isTrending, Double rating, Integer reviewsCount, Integer learnersCount, Long categoryId, Long creatorId, LocalDateTime createdAt) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -92,18 +54,6 @@ public class Content {
         this.categoryId = categoryId;
         this.creatorId = creatorId;
         this.createdAt = createdAt;
-    }
-
-    // Convenient Constructor for creating new Content
-    public Content(String title, String description, Double price, String type, String level, String status, Long categoryId, Long creatorId) {
-        this.title = title;
-        this.description = description;
-        this.price = price;
-        this.type = type;
-        this.level = level;
-        this.status = status;
-        this.categoryId = categoryId;
-        this.creatorId = creatorId;
     }
 
     // Getters and Setters
@@ -261,14 +211,13 @@ public class Content {
 
     @Override
     public String toString() {
-        return "Content{" +
+        return "ContentResponse{" +
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", price=" + price +
                 ", type='" + type + '\'' +
                 ", status='" + status + '\'' +
                 ", creatorId=" + creatorId +
-                ", learnersCount=" + learnersCount +
                 '}';
     }
 }
