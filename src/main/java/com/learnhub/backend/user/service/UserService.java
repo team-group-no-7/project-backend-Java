@@ -93,18 +93,24 @@ public class UserService {
     }
 
     /**
-     * Upgrade a user from LEARNER to CREATOR role.
-     * Updates PostgreSQL database column `role` to "CREATOR".
+     * Upgrade a user to CREATOR role while retaining existing roles (e.g. "LEARNER,CREATOR").
+     * Updates PostgreSQL database column `role` to preserve both LEARNER and CREATOR access.
      *
      * @param userId the user ID to upgrade
-     * @return updated UserProfileResponse DTO with role = "CREATOR"
+     * @return updated UserProfileResponse DTO with role = "LEARNER,CREATOR"
      */
     @Transactional
     public UserProfileResponse becomeCreator(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
-        user.setRole("CREATOR");
+        String currentRole = user.getRole();
+        if (currentRole == null || currentRole.trim().isEmpty()) {
+            user.setRole("LEARNER,CREATOR");
+        } else if (!currentRole.contains("CREATOR")) {
+            user.setRole(currentRole + ",CREATOR");
+        }
+
         User updatedUser = userRepository.save(user);
         return mapToProfileResponse(updatedUser);
     }

@@ -6,16 +6,20 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * JwtAuthenticationFilter — Runs before every HTTP request to check for a valid JWT token.
+ * Supports single or multi-role tokens (e.g. "LEARNER,CREATOR").
  * 
  * Implemented using explicit Java constructor dependency injection (no Lombok).
  */
@@ -54,12 +58,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String email = jwtUtil.extractEmail(token);
             String role = jwtUtil.extractRole(token);
 
+            // Parse single or comma-separated roles into GrantedAuthority list
+            List<GrantedAuthority> authorities = Arrays.stream(role.split(","))
+                    .map(r -> new SimpleGrantedAuthority("ROLE_" + r.trim()))
+                    .collect(Collectors.toList());
+
             // Step 6: Create a Spring Security Authentication object
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(
                             email,
                             null,
-                            List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                            authorities
                     );
 
             // Step 7: Set the authentication in Spring Security's context
