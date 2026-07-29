@@ -1,7 +1,7 @@
 # 🔐 LearnHub Auth Module Testing Guide
 
 > This guide explains how to test the Auth APIs built in `feature/auth`.
-> For the complete documentation file, see [src/main/java/com/learnhub/backend/auth/README.md](src/main/java/com/learnhub/backend/auth/README.md).
+> For the complete documentation file, see [src/main/java/com/learnhub/backend/auth/AUTH_MODULE_TESTING.md](src/main/java/com/learnhub/backend/auth/AUTH_MODULE_TESTING.md).
 
 ---
 
