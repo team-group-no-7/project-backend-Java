@@ -1,7 +1,7 @@
 # 👤 LearnHub Creator Profile Module Testing Guide
 
 > This guide explains how to test the Creator & User Profile APIs built in `feature/creator-profile`.
-> For the complete documentation file, see [src/main/java/com/learnhub/backend/user/README.md](src/main/java/com/learnhub/backend/user/README.md).
+> For the complete documentation file, see [src/main/java/com/learnhub/backend/user/USER_PROFILE_TESTING.md](src/main/java/com/learnhub/backend/user/USER_PROFILE_TESTING.md).
 
 ---
 
