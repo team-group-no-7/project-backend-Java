@@ -1,7 +1,7 @@
 # 📊 LearnHub Creator Dashboard Analytics Testing Guide
 
 > This guide explains how to test the Creator Dashboard Analytics APIs built in `feature/creator-dashboard`.
-> For the complete documentation file, see [src/main/java/com/learnhub/backend/catalog/README.md](src/main/java/com/learnhub/backend/catalog/README.md).
+> For the complete documentation file, see [src/main/java/com/learnhub/backend/catalog/CREATOR_DASHBOARD_TESTING.md](src/main/java/com/learnhub/backend/catalog/CREATOR_DASHBOARD_TESTING.md).
 
 ---
 
