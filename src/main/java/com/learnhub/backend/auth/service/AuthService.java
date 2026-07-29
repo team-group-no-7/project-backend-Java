@@ -10,7 +10,6 @@ import com.learnhub.backend.common.exception.ResourceNotFoundException;
 import com.learnhub.backend.common.util.JwtUtil;
 import com.learnhub.backend.user.entity.User;
 import com.learnhub.backend.user.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,26 +17,31 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-/*
- * AuthService — Contains all the business logic for Authentication.
+/**
+ * AuthService — Business logic for Authentication.
+ * 
+ * Implemented in pure Java with explicit constructors and object instantiations (no Lombok).
  */
 @Service
-@RequiredArgsConstructor
 public class AuthService {
 
-    // From user module — we need to save and find users
     private final UserRepository userRepository;
-
-    // From auth module — we need to save and find refresh tokens
     private final RefreshTokenRepository refreshTokenRepository;
-
-    // From common module — we need to generate and validate JWT tokens
     private final JwtUtil jwtUtil;
-
-    // From common config — we need to hash and verify passwords
     private final PasswordEncoder passwordEncoder;
 
-    /*
+    // Explicit constructor for dependency injection (no Lombok @RequiredArgsConstructor)
+    public AuthService(UserRepository userRepository,
+                       RefreshTokenRepository refreshTokenRepository,
+                       JwtUtil jwtUtil,
+                       PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.refreshTokenRepository = refreshTokenRepository;
+        this.jwtUtil = jwtUtil;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    /**
      * REGISTER — Create a new user account.
      */
     @Transactional
@@ -48,47 +52,44 @@ public class AuthService {
             throw new BadRequestException("Email already registered");
         }
 
-        // Step 2: Build a new User entity with hashed password
-        // Role defaults to "LEARNER" — we don't let users choose ADMIN from the form!
-        User newUser = User.builder()
-                .name(request.getName())
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))  // Hash the password
-                .role("LEARNER")
-                .build();
+        // Step 2: Create User object using standard constructor & setters
+        User newUser = new User();
+        newUser.setName(request.getName());
+        newUser.setEmail(request.getEmail());
+        newUser.setPassword(passwordEncoder.encode(request.getPassword()));
+        newUser.setRole("LEARNER");
 
-        // Step 3: Save user to database — JPA auto-generates the ID
+        // Step 3: Save user to database
         User savedUser = userRepository.save(newUser);
 
-        // Step 4: Generate JWT token with email and role
+        // Step 4: Generate JWT token
         String jwtToken = jwtUtil.generateToken(savedUser.getEmail(), savedUser.getRole());
 
-        // Step 5: Create a refresh token for this user
+        // Step 5: Create a refresh token
         RefreshToken refreshToken = createRefreshToken(savedUser.getId());
 
-        // Step 6: Build and return the response
-        return AuthResponse.builder()
-                .token(jwtToken)
-                .refreshToken(refreshToken.getToken())
-                .id(savedUser.getId())
-                .name(savedUser.getName())
-                .email(savedUser.getEmail())
-                .role(savedUser.getRole())
-                .build();
+        // Step 6: Return AuthResponse using standard constructor
+        return new AuthResponse(
+                jwtToken,
+                refreshToken.getToken(),
+                savedUser.getId(),
+                savedUser.getName(),
+                savedUser.getEmail(),
+                savedUser.getRole()
+        );
     }
 
-    /*
-     * LOGIN — Verify user credentials and issue tokens.
+    /**
+     * LOGIN — Verify credentials and issue tokens.
      */
     @Transactional
     public AuthResponse login(LoginRequest request) {
 
-        // Step 1: Find user by email — throw error if not found
+        // Step 1: Find user by email
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new BadRequestException("Invalid email or password"));
 
         // Step 2: Compare plain password with stored BCrypt hash
-        // passwordEncoder.matches("pass123", "$2a$10$abc...") → true/false
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new BadRequestException("Invalid email or password");
         }
@@ -99,18 +100,18 @@ public class AuthService {
         // Step 4: Create refresh token
         RefreshToken refreshToken = createRefreshToken(user.getId());
 
-        // Step 5: Build and return the response
-        return AuthResponse.builder()
-                .token(jwtToken)
-                .refreshToken(refreshToken.getToken())
-                .id(user.getId())
-                .name(user.getName())
-                .email(user.getEmail())
-                .role(user.getRole())
-                .build();
+        // Step 5: Return AuthResponse using standard constructor
+        return new AuthResponse(
+                jwtToken,
+                refreshToken.getToken(),
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getRole()
+        );
     }
 
-    /*
+    /**
      * REFRESH TOKEN — Issue a new JWT using a valid refresh token.
      */
     @Transactional
@@ -120,7 +121,7 @@ public class AuthService {
         RefreshToken refreshToken = refreshTokenRepository.findByToken(token)
                 .orElseThrow(() -> new BadRequestException("Invalid refresh token"));
 
-        // Step 2: Check if token is revoked (user logged out)
+        // Step 2: Check if token is revoked
         if (refreshToken.getRevoked()) {
             throw new BadRequestException("Refresh token has been revoked");
         }
@@ -137,24 +138,22 @@ public class AuthService {
         // Step 5: Generate a new JWT token
         String newJwtToken = jwtUtil.generateToken(user.getEmail(), user.getRole());
 
-        // Step 6: Return response with new JWT (same refresh token stays valid)
-        return AuthResponse.builder()
-                .token(newJwtToken)
-                .refreshToken(refreshToken.getToken())
-                .id(user.getId())
-                .name(user.getName())
-                .email(user.getEmail())
-                .role(user.getRole())
-                .build();
+        // Step 6: Return response with new JWT
+        return new AuthResponse(
+                newJwtToken,
+                refreshToken.getToken(),
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getRole()
+        );
     }
 
-    /*
-     * LOGOUT — Revoke the refresh token so it cannot be reused.
+    /**
+     * LOGOUT — Revoke the refresh token.
      */
     @Transactional
     public void logout(String token) {
-
-        // Find the refresh token and mark it as revoked
         RefreshToken refreshToken = refreshTokenRepository.findByToken(token)
                 .orElseThrow(() -> new BadRequestException("Invalid refresh token"));
 
@@ -162,16 +161,16 @@ public class AuthService {
         refreshTokenRepository.save(refreshToken);
     }
 
-    /*
+    /**
      * HELPER — Create and save a new refresh token for a user.
      */
     private RefreshToken createRefreshToken(Long userId) {
-        RefreshToken refreshToken = RefreshToken.builder()
-                .userId(userId)
-                .token(UUID.randomUUID().toString())
-                .expiryDate(LocalDateTime.now().plusDays(7))
-                .revoked(false)
-                .build();
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setUserId(userId);
+        refreshToken.setToken(UUID.randomUUID().toString());
+        refreshToken.setExpiryDate(LocalDateTime.now().plusDays(7));
+        refreshToken.setRevoked(false);
+
         return refreshTokenRepository.save(refreshToken);
     }
 }

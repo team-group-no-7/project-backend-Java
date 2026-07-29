@@ -7,36 +7,36 @@ import com.learnhub.backend.auth.dto.RegisterRequest;
 import com.learnhub.backend.auth.service.AuthService;
 import com.learnhub.backend.common.dto.ApiResponse;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-/*
+/**
  * AuthController — REST Controller for Authentication Module.
- * Exposes REST API endpoints for user registration, login, token refresh, and logout.
- *
- * Base Path: /api/auth
+ * 
+ * Implemented in pure Java with explicit constructor dependency injection (no Lombok).
  */
 @RestController
 @RequestMapping("/api/auth")
-@RequiredArgsConstructor
 public class AuthController {
 
     private final AuthService authService;
 
-    /*
+    // Explicit constructor for dependency injection
+    public AuthController(AuthService authService) {
+        this.authService = authService;
+    }
+
+    /**
      * GET /api/auth/status
-     * Health check endpoint to verify auth module is running.
      */
     @GetMapping("/status")
     public ResponseEntity<ApiResponse<String>> getStatus() {
         return ResponseEntity.ok(ApiResponse.success("Authentication Module is Active", "OK"));
     }
 
-    /*
+    /**
      * POST /api/auth/register
-     * Register a new user account.
      */
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<AuthResponse>> register(@Valid @RequestBody RegisterRequest request) {
@@ -45,9 +45,8 @@ public class AuthController {
                 .body(ApiResponse.success("User registered successfully", authResponse));
     }
 
-    /*
+    /**
      * POST /api/auth/login
-     * Authenticate existing user with email and password.
      */
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
@@ -55,9 +54,8 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success("Login successful", authResponse));
     }
 
-    /*
+    /**
      * POST /api/auth/refresh
-     * Generate a new access JWT token using a valid refresh token.
      */
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<AuthResponse>> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
@@ -65,9 +63,8 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success("Token refreshed successfully", authResponse));
     }
 
-    /*
+    /**
      * POST /api/auth/logout
-     * Revoke the user's refresh token on logout.
      */
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<String>> logout(@Valid @RequestBody RefreshTokenRequest request) {

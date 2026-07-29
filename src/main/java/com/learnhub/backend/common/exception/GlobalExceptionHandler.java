@@ -51,11 +51,7 @@ public class GlobalExceptionHandler {
                 .orElse("Validation failed");
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.<Map<String, String>>builder()
-                        .success(false)
-                        .message(firstErrorMessage)
-                        .data(errors)
-                        .build());
+                .body(new ApiResponse<>(false, firstErrorMessage, errors));
     }
 
     /*

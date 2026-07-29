@@ -2,12 +2,12 @@ package com.learnhub.backend.auth.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
 
-/*
- * LoginRequest — Carries data from the frontend login form to the backend.
+/**
+ * LoginRequest — Carries login form data from frontend to backend.
+ * 
+ * Implemented in pure Java with explicit getters, setters, and constructors.
  */
-@Data
 public class LoginRequest {
 
     @NotBlank(message = "Email is required")
@@ -16,4 +16,38 @@ public class LoginRequest {
 
     @NotBlank(message = "Password is required")
     private String password;
+
+    // Default Constructor (Required by Jackson for JSON deserialization)
+    public LoginRequest() {
+    }
+
+    // Parameterized Constructor
+    public LoginRequest(String email, String password) {
+        this.email = email;
+        this.password = password;
+    }
+
+    // Getters and Setters
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    @Override
+    public String toString() {
+        return "LoginRequest{" +
+                "email='" + email + '\'' +
+                '}';
+    }
 }

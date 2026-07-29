@@ -1,6 +1,5 @@
 package com.learnhub.backend.common.config;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -11,17 +10,24 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
 
-/*
- * SecurityConfig — The main Spring Security configuration for LearnHub.
+/**
+ * SecurityConfig — Main Spring Security configuration for LearnHub.
+ * 
+ * Implemented using explicit Java constructor dependency injection (no Lombok).
  */
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity    // It Enables @PreAuthorize("hasRole('ADMIN')") on controllers
-@RequiredArgsConstructor
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CorsConfigurationSource corsConfigurationSource;
+
+    // Explicit constructor for dependency injection (no Lombok @RequiredArgsConstructor)
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, CorsConfigurationSource corsConfigurationSource) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.corsConfigurationSource = corsConfigurationSource;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -42,18 +48,16 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
 
                 // PUBLIC ENDPOINTS — No JWT token required
-                // Auth endpoints (login, register, refresh) must be accessible without a token
                 .requestMatchers("/api/auth/**").permitAll()
 
-                // Status check endpoints — useful for health monitoring
+                // Status check endpoints
                 .requestMatchers("/api/users/status").permitAll()
                 .requestMatchers("/api/catalog/status").permitAll()
                 .requestMatchers("/api/billing/status").permitAll()
                 .requestMatchers("/api/mentorship/status").permitAll()
                 .requestMatchers("/api/discussion/status").permitAll()
 
-                // Public content endpoints — Landing page, Marketplace, Resource details
-                // These will be created by Sakshi and Shubham later
+                // Public content endpoints
                 .requestMatchers("/api/public/**").permitAll()
 
                 // PROTECTED ENDPOINTS — JWT token required for everything else
@@ -61,7 +65,6 @@ public class SecurityConfig {
             )
 
             // Step 5: Add our JWT filter before Spring's default authentication filter
-            // This means our filter runs FIRST, extracts the token, and sets the user
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
