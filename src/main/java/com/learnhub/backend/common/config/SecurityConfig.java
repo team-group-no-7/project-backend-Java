@@ -50,8 +50,10 @@ public class SecurityConfig {
                 // PUBLIC ENDPOINTS — No JWT token required
                 .requestMatchers("/api/auth/**").permitAll()
 
+
                 // Status check endpoints
                 .requestMatchers("/api/users/status").permitAll()
+                .requestMatchers("/api/creators/status").permitAll()
                 .requestMatchers("/api/catalog/status").permitAll()
                 .requestMatchers("/api/billing/status").permitAll()
                 .requestMatchers("/api/mentorship/status").permitAll()
