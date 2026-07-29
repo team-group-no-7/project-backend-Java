@@ -7,6 +7,7 @@ import com.learnhub.backend.user.dto.response.DashboardResponse;
 import com.learnhub.backend.user.service.DashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -18,6 +19,7 @@ public class DashboardServiceImpl implements DashboardService {
     private final PurchaseRepository purchaseRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public DashboardResponse getDashboard(Long userId) {
 
         List<Purchase> purchases =
@@ -25,6 +27,9 @@ public class DashboardServiceImpl implements DashboardService {
 
         BigDecimal investment =
                 purchaseRepository.totalInvestment(userId);
+        if (investment == null) {
+            investment = BigDecimal.ZERO;
+        }
 
         List<ContinueLearningResponse> continueLearning =
                 purchases.stream()
@@ -38,8 +43,8 @@ public class DashboardServiceImpl implements DashboardService {
                         .toList();
 
         return DashboardResponse.builder()
-                .activeResources(purchases.size())
-                .completedResources(0)
+                .activeResources((long) purchases.size())
+                .completedResources(0L)
                 .totalInvestment(investment)
                 .continueLearning(continueLearning)
                 .build();

@@ -1,11 +1,13 @@
 package com.learnhub.backend.billing.service.impl;
 
 import com.learnhub.backend.billing.dto.response.PurchaseResponse;
+import com.learnhub.backend.user.dto.response.LibraryResponse;
 import com.learnhub.backend.billing.entity.Purchase;
 import com.learnhub.backend.billing.repository.PurchaseRepository;
 import com.learnhub.backend.billing.service.PurchaseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -16,14 +18,17 @@ public class PurchaseServiceImpl implements PurchaseService {
     private final PurchaseRepository purchaseRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public List<PurchaseResponse> getPurchaseHistory(Long userId) {
 
-        return purchaseRepository.findByUserId(userId)
+        return purchaseRepository.findByUserIdOrderByPurchasedAtDesc(userId)
                 .stream()
                 .map(this::mapToDto)
                 .toList();
     }
+
     @Override
+    @Transactional(readOnly = true)
     public List<LibraryResponse> getMyLibrary(Long userId) {
 
         return purchaseRepository.findLibraryByUserId(userId)

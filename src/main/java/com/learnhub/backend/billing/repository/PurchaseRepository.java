@@ -12,6 +12,8 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long> {
 
     List<Purchase> findByUserId(Long userId);
 
+    List<Purchase> findByUserIdOrderByPurchasedAtDesc(Long userId);
+
     long countByUserId(Long userId);
 
     @Query("""
@@ -27,6 +29,7 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long> {
             JOIN FETCH p.content c
             JOIN FETCH c.category
             WHERE p.user.id = :userId
+            ORDER BY p.purchasedAt DESC
             """)
     List<Purchase> dashboardContents(@Param("userId") Long userId);
 
@@ -36,6 +39,7 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long> {
             JOIN FETCH p.content c
             JOIN FETCH c.category
             WHERE p.user.id = :userId
+            ORDER BY p.purchasedAt DESC
             """)
     List<Purchase> findLibraryByUserId(@Param("userId") Long userId);
 }

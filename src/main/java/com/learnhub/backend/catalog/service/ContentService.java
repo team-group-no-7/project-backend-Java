@@ -1,16 +1,18 @@
 package com.learnhub.backend.catalog.service;
 
-import com.learnhub.backend.catalog.dto.response.ContentResponse;
+import com.learnhub.backend.catalog.dto.response.CatalogResponse;
+import com.learnhub.backend.catalog.dto.response.ContentReaderResponse;
 
 import java.util.List;
 
 public interface ContentService {
 
-    List<ContentResponse> getAllContents();
+    ContentReaderResponse getContent(Long contentId);
 
-    List<ContentResponse> getFeaturedContents();
+    List<CatalogResponse> getAllContents();
 
-    List<ContentResponse> getTrendingContents();
+    List<CatalogResponse> search(String keyword);
 
-    ContentResponse getContentById(Long id);
+    List<CatalogResponse> getByCategory(Long categoryId);
+
 }

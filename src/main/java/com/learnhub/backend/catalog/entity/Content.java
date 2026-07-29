@@ -1,7 +1,7 @@
 package com.learnhub.backend.catalog.entity;
 
 import com.learnhub.backend.catalog.enums.ContentType;
-import com.learnhub.backend.auth.entity.User;
+import com.learnhub.backend.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 

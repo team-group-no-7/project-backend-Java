@@ -1,6 +1,6 @@
 package com.learnhub.backend.billing.entity;
 
-import com.learnhub.backend.auth.entity.User;
+import com.learnhub.backend.user.entity.User;
 import com.learnhub.backend.catalog.entity.Content;
 import jakarta.persistence.*;
 import lombok.*;
