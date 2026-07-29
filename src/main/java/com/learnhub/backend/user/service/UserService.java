@@ -2,7 +2,6 @@ package com.learnhub.backend.user.service;
 
 import com.learnhub.backend.user.entity.User;
 import com.learnhub.backend.user.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,12 +9,18 @@ import java.util.Optional;
 
 /**
  * UserService — Business logic for User Profile Management.
+ *
+ * Implemented in pure Java with explicit constructor dependency injection (no Lombok).
  */
 @Service
-@RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
+
+    // Explicit constructor for dependency injection
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     public List<User> getAllUsers() {
         return userRepository.findAll();
