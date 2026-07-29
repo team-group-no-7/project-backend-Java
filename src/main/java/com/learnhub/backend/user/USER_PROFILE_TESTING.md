@@ -133,7 +133,35 @@ Update profile fields (`name`, `headline`, `location`, `avatarUrl`) for user ID 
 
 ---
 
-### Step 5: Test Non-Existent User Lookup (404 Error Check)
+### Step 5: Become Creator (Upgrade Role from LEARNER to CREATOR)
+Upgrade user's role from `LEARNER` to `CREATOR` in PostgreSQL database.
+
+- **HTTP Method:** `PATCH`
+- **URL:** `http://localhost:8080/api/users/1/become-creator`
+- **Headers:**
+  - `Authorization`: `Bearer <your-jwt-token>`
+- **Expected Status:** `200 OK`
+- **Expected Response:**
+  ```json
+  {
+    "success": true,
+    "message": "Congratulations! You are now a Creator on LearnHub",
+    "data": {
+      "id": 1,
+      "name": "Rohan Sharma",
+      "email": "rohan@learnhub.com",
+      "role": "CREATOR",
+      "avatarUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb",
+      "headline": "Senior Full-Stack Creator & Java Architect",
+      "location": "Bengaluru, India",
+      "joinedAt": "2026-07-29T19:54:00"
+    }
+  }
+  ```
+
+---
+
+### Step 6: Test Non-Existent User Lookup (404 Error Check)
 Verify that requesting a user ID that does not exist returns a clean `404 Not Found` response.
 
 - **HTTP Method:** `GET`
@@ -189,6 +217,7 @@ Verify that attempting to update profile with an empty name triggers `@NotBlank`
 | `GET` | `/api/users/all` | JWT Protected | None | Fetch list of all registered users |
 | `GET` | `/api/users/{id}` | JWT Protected | None | Fetch user profile by ID |
 | `PUT` | `/api/users/{id}` | JWT Protected | `UpdateProfileRequest` | Update user profile details |
+| `PATCH` | `/api/users/{id}/become-creator` | JWT Protected | None | Upgrade user role from LEARNER to CREATOR |
 
 ---
 

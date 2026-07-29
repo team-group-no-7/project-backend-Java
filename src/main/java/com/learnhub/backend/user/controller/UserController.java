@@ -75,4 +75,17 @@ public class UserController {
         UserProfileResponse updatedProfile = userService.updateUserProfile(id, request);
         return ResponseEntity.ok(ApiResponse.success("User profile updated successfully", updatedProfile));
     }
+
+    /**
+     * PATCH /api/users/{id}/become-creator
+     * Upgrades a user from LEARNER role to CREATOR role in PostgreSQL database.
+     *
+     * @param id the user ID
+     * @return updated UserProfileResponse with role = "CREATOR"
+     */
+    @PatchMapping("/{id}/become-creator")
+    public ResponseEntity<ApiResponse<UserProfileResponse>> becomeCreator(@PathVariable Long id) {
+        UserProfileResponse profile = userService.becomeCreator(id);
+        return ResponseEntity.ok(ApiResponse.success("Congratulations! You are now a Creator on LearnHub", profile));
+    }
 }

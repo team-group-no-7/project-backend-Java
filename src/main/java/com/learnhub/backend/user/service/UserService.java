@@ -14,7 +14,7 @@ import java.util.Optional;
 /**
  * UserService — Business logic for User Profile Management.
  *
- * Handles fetching and updating user profiles, roles, and identity details.
+ * Handles fetching and updating user profiles, roles (including Become Creator), and identity details.
  * Implemented in pure Java with explicit constructor dependency injection (no Lombok).
  */
 @Service
@@ -88,6 +88,23 @@ public class UserService {
             user.setAvatarUrl(request.getAvatarUrl());
         }
 
+        User updatedUser = userRepository.save(user);
+        return mapToProfileResponse(updatedUser);
+    }
+
+    /**
+     * Upgrade a user from LEARNER to CREATOR role.
+     * Updates PostgreSQL database column `role` to "CREATOR".
+     *
+     * @param userId the user ID to upgrade
+     * @return updated UserProfileResponse DTO with role = "CREATOR"
+     */
+    @Transactional
+    public UserProfileResponse becomeCreator(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+        user.setRole("CREATOR");
         User updatedUser = userRepository.save(user);
         return mapToProfileResponse(updatedUser);
     }

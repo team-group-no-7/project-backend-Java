@@ -24,6 +24,11 @@
   }
   ```
 
-### 3. Check All Users (`GET /api/users/all`)
+### 3. Become Creator (`PATCH /api/users/{id}/become-creator`)
+- **URL**: `http://localhost:8080/api/users/1/become-creator`
+- **Header**: `Authorization: Bearer <your-jwt-token>`
+- **Response**: Upgrades user role in PostgreSQL database to `CREATOR`.
+
+### 4. Check All Users (`GET /api/users/all`)
 - **URL**: `http://localhost:8080/api/users/all`
 - **Header**: `Authorization: Bearer <your-jwt-token>`
