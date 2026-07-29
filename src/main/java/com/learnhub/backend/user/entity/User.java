@@ -27,7 +27,10 @@ public class User {
     private String password;
 
     @Column(nullable = false)
-    private String role;
+    private String role; // LEARNER, CREATOR, ADMIN
+
+    @Column(nullable = false)
+    private String status = "ACTIVE"; // ACTIVE, FROZEN
 
     @Column(name = "avatar_url")
     private String avatarUrl;
@@ -44,12 +47,13 @@ public class User {
     }
 
     // Constructor with all fields
-    public User(Long id, String name, String email, String password, String role, String avatarUrl, String headline, String location, LocalDateTime joinedAt) {
+    public User(Long id, String name, String email, String password, String role, String status, String avatarUrl, String headline, String location, LocalDateTime joinedAt) {
         this.id = id;
         this.name = name;
         this.email = email;
         this.password = password;
         this.role = role;
+        this.status = status;
         this.avatarUrl = avatarUrl;
         this.headline = headline;
         this.location = location;
@@ -62,6 +66,7 @@ public class User {
         this.email = email;
         this.password = password;
         this.role = role;
+        this.status = "ACTIVE";
     }
 
     // Getters and Setters
@@ -105,6 +110,14 @@ public class User {
         this.role = role;
     }
 
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
     public String getAvatarUrl() {
         return avatarUrl;
     }
@@ -144,7 +157,7 @@ public class User {
                 ", name='" + name + '\'' +
                 ", email='" + email + '\'' +
                 ", role='" + role + '\'' +
-                ", joinedAt=" + joinedAt +
+                ", status='" + status + '\'' +
                 '}';
     }
 }

@@ -16,4 +16,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
 
     boolean existsByEmail(String email);
+
+    @org.springframework.data.jpa.repository.Query("SELECT u FROM User u WHERE " +
+           "(cast(:search as string) IS NULL OR LOWER(u.name) LIKE LOWER(CONCAT('%', cast(:search as string), '%')) OR LOWER(u.email) LIKE LOWER(CONCAT('%', cast(:search as string), '%')))")
+    java.util.List<User> searchUsers(@org.springframework.data.repository.query.Param("search") String search);
 }
