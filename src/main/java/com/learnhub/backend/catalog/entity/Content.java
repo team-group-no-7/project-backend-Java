@@ -32,7 +32,7 @@ public class Content {
     @Column(name = "file_url")
     private String fileUrl;
 
-    @Column(precision = 10, scale = 2)
+    @Column(name = "price")
     private Double price = 0.00;
 
     private String type;
@@ -46,7 +46,7 @@ public class Content {
     @Column(name = "is_trending")
     private Boolean isTrending = false;
 
-    @Column(precision = 3, scale = 2)
+    @Column(name = "rating")
     private Double rating = 0.00;
 
     @Column(name = "reviews_count")
