@@ -8,11 +8,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/profile")
-@RequiredArgsConstructor
+@RequestMapping("/api/learners/profile")
 public class ProfileController {
 
     private final ProfileService profileService;
+
+    public ProfileController(ProfileService profileService) {
+        this.profileService = profileService;
+    }
 
     @GetMapping("/{userId}")
     public ProfileResponse getProfile(@PathVariable Long userId) {

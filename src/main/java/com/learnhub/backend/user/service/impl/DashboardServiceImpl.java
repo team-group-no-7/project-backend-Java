@@ -13,10 +13,14 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class DashboardServiceImpl implements DashboardService {
 
     private final PurchaseRepository purchaseRepository;
+
+    public DashboardServiceImpl(PurchaseRepository purchaseRepository) {
+        this.purchaseRepository = purchaseRepository;
+    }
+
 
     @Override
     @Transactional(readOnly = true)
@@ -33,20 +37,20 @@ public class DashboardServiceImpl implements DashboardService {
 
         List<ContinueLearningResponse> continueLearning =
                 purchases.stream()
-                        .map(p -> ContinueLearningResponse.builder()
-                                .contentId(p.getContent().getId())
-                                .title(p.getContent().getTitle())
-                                .type(p.getContent().getType().name())
-                                .category(p.getContent().getCategory().getName())
-                                .fileUrl(p.getContent().getFileUrl())
-                                .build())
+                        .map(p -> new ContinueLearningResponse(
+                                p.getContent().getId(),
+                                p.getContent().getTitle(),
+                                p.getContent().getType().name(),
+                                p.getContent().getCategory().getName(),
+                                p.getContent().getFileUrl()
+                        ))
                         .toList();
 
-        return DashboardResponse.builder()
-                .activeResources((long) purchases.size())
-                .completedResources(0L)
-                .totalInvestment(investment)
-                .continueLearning(continueLearning)
-                .build();
+        return new DashboardResponse(
+                (long) purchases.size(),
+                0L,
+                investment,
+                continueLearning
+        );
     }
 }

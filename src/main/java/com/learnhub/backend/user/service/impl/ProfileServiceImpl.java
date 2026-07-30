@@ -11,10 +11,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@RequiredArgsConstructor
 public class ProfileServiceImpl implements ProfileService {
 
     private final UserRepository userRepository;
+
+    public ProfileServiceImpl(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
 
     @Override
     @Transactional(readOnly = true)
@@ -46,14 +50,14 @@ public class ProfileServiceImpl implements ProfileService {
 
     private ProfileResponse map(User user) {
 
-        return ProfileResponse.builder()
-                .id(user.getId())
-                .name(user.getName())
-                .email(user.getEmail())
-                .role(user.getRole())
-                .avatarUrl(user.getAvatarUrl())
-                .headline(user.getHeadline())
-                .location(user.getLocation())
-                .build();
+        return new ProfileResponse(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getRole(),
+                user.getAvatarUrl(),
+                user.getHeadline(),
+                user.getLocation()
+        );
     }
 }
