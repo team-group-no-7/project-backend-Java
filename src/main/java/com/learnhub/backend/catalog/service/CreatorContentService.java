@@ -2,103 +2,22 @@ package com.learnhub.backend.catalog.service;
 
 import com.learnhub.backend.catalog.dto.CreateContentRequest;
 import com.learnhub.backend.catalog.dto.ContentResponse;
-import com.learnhub.backend.catalog.entity.Category;
-import com.learnhub.backend.catalog.entity.Content;
-import com.learnhub.backend.catalog.repository.CategoryRepository;
-import com.learnhub.backend.catalog.repository.ContentRepository;
-import com.learnhub.backend.common.exception.BadRequestException;
-import com.learnhub.backend.common.exception.ResourceNotFoundException;
-import com.learnhub.backend.user.repository.UserRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.file.*;
-import java.util.UUID;
-
 /**
- * CreatorContentService — Business logic for Content Authoring Studio (Publishing Articles & PDF Resources).
- *
- * Implemented in pure Java with explicit constructor dependency injection (no Lombok).
+ * CreatorContentService — Business logic interface for Content Authoring Studio.
  */
-@Service
-public class CreatorContentService {
-
-    private final ContentRepository contentRepository;
-    private final CategoryRepository categoryRepository;
-    private final UserRepository userRepository;
-
-    // Directory for storing uploaded PDF files locally
-    private static final String UPLOAD_DIR = "uploads/pdfs/";
-
-    // Explicit constructor for dependency injection
-    public CreatorContentService(ContentRepository contentRepository,
-                                 CategoryRepository categoryRepository,
-                                 UserRepository userRepository) {
-        this.contentRepository = contentRepository;
-        this.categoryRepository = categoryRepository;
-        this.userRepository = userRepository;
-    }
+public interface CreatorContentService {
 
     /**
      * Publish Rich Text WYSIWYG Article or Generic Content Resource.
-     *
-     * @param request CreateContentRequest carrying article metadata and contentBody
-     * @return ContentResponse containing saved resource details
      */
-    @Transactional
-    public ContentResponse publishContent(CreateContentRequest request) {
-
-        // Step 1: Verify Creator exists
-        userRepository.findById(request.getCreatorId())
-                .orElseThrow(() -> new ResourceNotFoundException("Creator not found with id: " + request.getCreatorId()));
-
-        // Step 2: Verify Category exists
-        Category category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + request.getCategoryId()));
-
-        // Step 3: Build Content Entity
-        Content content = new Content();
-        content.setTitle(request.getTitle());
-        content.setDescription(request.getDescription());
-        content.setPreviewText(request.getPreviewText());
-        content.setContentBody(request.getContentBody());
-        content.setFileUrl(request.getFileUrl());
-        content.setPrice(request.getPrice() != null ? request.getPrice() : 0.00);
-        content.setType(request.getType() != null ? request.getType() : "ARTICLE");
-        content.setLevel(request.getLevel() != null ? request.getLevel() : "Beginner");
-        content.setTags(request.getTags());
-        content.setStatus(request.getStatus() != null ? request.getStatus() : "PUBLISHED");
-        content.setCategoryId(request.getCategoryId());
-        content.setCreatorId(request.getCreatorId());
-
-        // Step 4: Save Content to database
-        Content savedContent = contentRepository.save(content);
-
-        // Step 5: Increment Category resource count
-        category.setResourceCount((category.getResourceCount() == null ? 0 : category.getResourceCount()) + 1);
-        categoryRepository.save(category);
-
-        return mapToResponse(savedContent);
-    }
+    ContentResponse publishContent(CreateContentRequest request);
 
     /**
      * Upload PDF File Resource and save to server disk storage.
-     *
-     * @param file uploaded MultipartFile
-     * @param title resource title
-     * @param description resource description
-     * @param price resource price
-     * @param level difficulty level
-     * @param tags search tags
-     * @param status DRAFT or PUBLISHED
-     * @param categoryId category ID
-     * @param creatorId creator user ID
-     * @return ContentResponse
      */
-    @Transactional
-    public ContentResponse uploadPdfResource(
+    ContentResponse uploadPdfResource(
             MultipartFile file,
             String title,
             String description,
@@ -107,82 +26,5 @@ public class CreatorContentService {
             String tags,
             String status,
             Long categoryId,
-            Long creatorId) {
-
-        // Step 1: Validate file presence
-        if (file == null || file.isEmpty()) {
-            throw new BadRequestException("PDF file cannot be empty");
-        }
-
-        // Step 2: Save PDF file to disk
-        String fileUrl = storeFileLocally(file);
-
-        // Step 3: Construct CreateContentRequest
-        CreateContentRequest request = new CreateContentRequest();
-        request.setTitle(title);
-        request.setDescription(description);
-        request.setFileUrl(fileUrl);
-        request.setPrice(price);
-        request.setType("PDF");
-        request.setLevel(level);
-        request.setTags(tags);
-        request.setStatus(status != null ? status : "PUBLISHED");
-        request.setCategoryId(categoryId);
-        request.setCreatorId(creatorId);
-
-        return publishContent(request);
-    }
-
-    /**
-     * Helper method to save uploaded file locally and return file access URL.
-     */
-    private String storeFileLocally(MultipartFile file) {
-        try {
-            Path uploadPath = Paths.get(UPLOAD_DIR);
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
-
-            String originalFilename = file.getOriginalFilename();
-            String fileExtension = "";
-            if (originalFilename != null && originalFilename.contains(".")) {
-                fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
-            }
-
-            String uniqueFilename = UUID.randomUUID().toString() + fileExtension;
-            Path filePath = uploadPath.resolve(uniqueFilename);
-            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-            return "/" + UPLOAD_DIR + uniqueFilename;
-        } catch (IOException e) {
-            throw new BadRequestException("Could not store file: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Helper method to map Content entity to ContentResponse DTO.
-     */
-    private ContentResponse mapToResponse(Content content) {
-        return new ContentResponse(
-                content.getId(),
-                content.getTitle(),
-                content.getDescription(),
-                content.getPreviewText(),
-                content.getContentBody(),
-                content.getFileUrl(),
-                content.getPrice(),
-                content.getType(),
-                content.getLevel(),
-                content.getTags(),
-                content.getStatus(),
-                content.getFeatured(),
-                content.getIsTrending(),
-                content.getRating(),
-                content.getReviewsCount(),
-                content.getLearnersCount(),
-                content.getCategoryId(),
-                content.getCreatorId(),
-                content.getCreatedAt()
-        );
-    }
+            Long creatorId);
 }
