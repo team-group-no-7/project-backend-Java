@@ -1,14 +1,13 @@
 package com.learnhub.backend.catalog.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 /**
- * CreateContentRequest — DTO carrying content publishing form inputs (Articles or PDFs).
+ * UpdateContentRequest — DTO carrying resource edit form data (Title, Description, Rich Text HTML, Price, Level, Tags, Status, Category).
  *
  * Implemented in pure Java with explicit getters, setters, and constructors (no Lombok).
  */
-public class CreateContentRequest {
+public class UpdateContentRequest {
 
     @NotBlank(message = "Title cannot be empty")
     private String title;
@@ -16,26 +15,22 @@ public class CreateContentRequest {
     private String description;
     private String previewText;
     private String contentBody; // Rich Text HTML/Markdown from WYSIWYG editor
-    private String fileUrl;     // Download/View URL for PDF resources
+    private String fileUrl;     // URL for PDF documents
 
-    private Double price = 0.00;
-    private String type = "ARTICLE"; // ARTICLE, PDF, COURSE
-    private String level = "Beginner"; // Beginner, Intermediate, Advanced
+    private Double price;
+    private String type;        // ARTICLE, PDF, COURSE
+    private String level;       // Beginner, Intermediate, Advanced
     private String tags;
-    private String status = "PUBLISHED"; // DRAFT or PUBLISHED
-
+    private String status;      // DRAFT or PUBLISHED
     private Long categoryId;
-    private String categoryName; // e.g. "Development", "Data Science", "AI Engineering"
-
-    @NotNull(message = "Creator ID is required")
-    private Long creatorId;
+    private String categoryName;
 
     // Default Constructor (Required by Jackson for JSON deserialization)
-    public CreateContentRequest() {
+    public UpdateContentRequest() {
     }
 
     // Parameterized Constructor
-    public CreateContentRequest(String title, String description, String previewText, String contentBody, String fileUrl, Double price, String type, String level, String tags, String status, Long categoryId, String categoryName, Long creatorId) {
+    public UpdateContentRequest(String title, String description, String previewText, String contentBody, String fileUrl, Double price, String type, String level, String tags, String status, Long categoryId, String categoryName) {
         this.title = title;
         this.description = description;
         this.previewText = previewText;
@@ -48,7 +43,6 @@ public class CreateContentRequest {
         this.status = status;
         this.categoryId = categoryId;
         this.categoryName = categoryName;
-        this.creatorId = creatorId;
     }
 
     // Getters and Setters
@@ -148,24 +142,14 @@ public class CreateContentRequest {
         this.categoryName = categoryName;
     }
 
-    public Long getCreatorId() {
-        return creatorId;
-    }
-
-    public void setCreatorId(Long creatorId) {
-        this.creatorId = creatorId;
-    }
-
     @Override
     public String toString() {
-        return "CreateContentRequest{" +
+        return "UpdateContentRequest{" +
                 "title='" + title + '\'' +
                 ", price=" + price +
-                ", type='" + type + '\'' +
                 ", status='" + status + '\'' +
                 ", categoryId=" + categoryId +
                 ", categoryName='" + categoryName + '\'' +
-                ", creatorId=" + creatorId +
                 '}';
     }
 }
