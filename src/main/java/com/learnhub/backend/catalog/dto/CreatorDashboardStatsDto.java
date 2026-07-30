@@ -1,16 +1,7 @@
 package com.learnhub.backend.catalog.dto;
 
-/**
+/*
  * CreatorDashboardStatsDto — DTO returning aggregated analytics metrics for creator dashboard.
- *
- * Implemented in pure Java with explicit getters, setters, and constructors (no Lombok).
- *
- * JSON Structure returned:
- * {
- *   "totalResources": 12,
- *   "totalLearners": 450,
- *   "totalEarnings": 12500.50
- * }
  */
 public class CreatorDashboardStatsDto {
 

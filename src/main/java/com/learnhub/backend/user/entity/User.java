@@ -3,11 +3,8 @@ package com.learnhub.backend.user.entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-/**
+/*
  * User Entity — Maps to the USERS table in the database.
- * 
- * Implemented in pure Java without Lombok annotations.
- * Provides explicit getters, setters, constructors, and toString().
  */
 @Entity
 @Table(name = "users")

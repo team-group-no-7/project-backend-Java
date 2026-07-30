@@ -2,10 +2,8 @@ package com.learnhub.backend.catalog.dto;
 
 import jakarta.validation.constraints.NotBlank;
 
-/**
+/*
  * ContentStatusRequest — DTO carrying status toggle updates (DRAFT vs PUBLISHED).
- *
- * Implemented in pure Java with explicit getters, setters, and constructors (no Lombok).
  */
 public class ContentStatusRequest {
 

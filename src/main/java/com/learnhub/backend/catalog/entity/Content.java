@@ -3,11 +3,9 @@ package com.learnhub.backend.catalog.entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-/**
+/*
  * Content Entity — Maps to the CONTENTS table in the database.
  * Represents learning resources (courses, articles, video/PDF materials) created by creators.
- *
- * Implemented in pure Java with explicit getters, setters, and constructors (no Lombok).
  */
 @Entity
 @Table(name = "contents")

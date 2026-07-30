@@ -21,10 +21,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
+/*
  * CreatorContentServiceImpl — Implementation class for Content Authoring Studio and Creator Resource Management Grid.
- *
- * Implemented in pure Java with explicit constructor dependency injection (no Lombok).
  */
 @Service
 public class CreatorContentServiceImpl implements CreatorContentService {
@@ -45,7 +43,7 @@ public class CreatorContentServiceImpl implements CreatorContentService {
         this.userRepository = userRepository;
     }
 
-    /**
+    /*
      * Publish Rich Text WYSIWYG Article or Generic Content Resource.
      */
     @Override
@@ -84,7 +82,7 @@ public class CreatorContentServiceImpl implements CreatorContentService {
         return mapToResponse(savedContent);
     }
 
-    /**
+    /*
      * Upload PDF File Resource and save to server disk storage.
      */
     @Override
@@ -123,7 +121,7 @@ public class CreatorContentServiceImpl implements CreatorContentService {
         return publishContent(request);
     }
 
-    /**
+    /*
      * Fetch all learning resources created by a specific creator (for Management Grid).
      */
     @Override
@@ -137,7 +135,7 @@ public class CreatorContentServiceImpl implements CreatorContentService {
                 .collect(Collectors.toList());
     }
 
-    /**
+    /*
      * Update/Edit existing content resource details (Title, Description, Rich Text HTML, Price, Level, Tags, Status, Category).
      */
     @Override
@@ -185,7 +183,7 @@ public class CreatorContentServiceImpl implements CreatorContentService {
         return mapToResponse(updatedContent);
     }
 
-    /**
+    /*
      * Toggle content status between DRAFT and PUBLISHED.
      */
     @Override
@@ -199,7 +197,7 @@ public class CreatorContentServiceImpl implements CreatorContentService {
         return mapToResponse(updatedContent);
     }
 
-    /**
+    /*
      * Delete a learning resource and update category resource count.
      */
     @Override
@@ -219,7 +217,7 @@ public class CreatorContentServiceImpl implements CreatorContentService {
         contentRepository.delete(content);
     }
 
-    /**
+    /*
      * Helper method to resolve Category by Name or ID with automatic creation if missing.
      */
     private Category resolveCategory(Long categoryId, String categoryName) {
@@ -236,7 +234,7 @@ public class CreatorContentServiceImpl implements CreatorContentService {
         }
     }
 
-    /**
+    /*
      * Helper method to save uploaded file locally and return file access URL.
      */
     private String storeFileLocally(MultipartFile file) {
@@ -262,7 +260,7 @@ public class CreatorContentServiceImpl implements CreatorContentService {
         }
     }
 
-    /**
+    /*
      * Helper method to map Content entity to ContentResponse DTO.
      */
     private ContentResponse mapToResponse(Content content) {

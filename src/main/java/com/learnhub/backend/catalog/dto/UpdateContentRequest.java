@@ -2,10 +2,8 @@ package com.learnhub.backend.catalog.dto;
 
 import jakarta.validation.constraints.NotBlank;
 
-/**
+/*
  * UpdateContentRequest — DTO carrying resource edit form data (Title, Description, Rich Text HTML, Price, Level, Tags, Status, Category).
- *
- * Implemented in pure Java with explicit getters, setters, and constructors (no Lombok).
  */
 public class UpdateContentRequest {
 

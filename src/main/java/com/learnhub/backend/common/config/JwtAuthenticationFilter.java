@@ -20,8 +20,6 @@ import java.util.stream.Collectors;
 /**
  * JwtAuthenticationFilter — Runs before every HTTP request to check for a valid JWT token.
  * Supports single or multi-role tokens (e.g. "LEARNER,CREATOR").
- * 
- * Implemented using explicit Java constructor dependency injection (no Lombok).
  */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {

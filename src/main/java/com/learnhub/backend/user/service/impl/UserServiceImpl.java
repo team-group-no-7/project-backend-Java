@@ -12,11 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
-/**
+/*
  * UserServiceImpl — Implementation class for User Profile Management.
- *
- * Handles fetching and updating user profiles, roles (including Become Creator), and identity details.
- * Implemented in pure Java with explicit constructor dependency injection (no Lombok).
  */
 @Service
 public class UserServiceImpl implements UserService {
@@ -28,7 +25,7 @@ public class UserServiceImpl implements UserService {
         this.userRepository = userRepository;
     }
 
-    /**
+    /*
      * Get all users in the system.
      */
     @Override
@@ -36,7 +33,7 @@ public class UserServiceImpl implements UserService {
         return userRepository.findAll();
     }
 
-    /**
+    /*
      * Get user by ID.
      */
     @Override
@@ -44,7 +41,7 @@ public class UserServiceImpl implements UserService {
         return userRepository.findById(id);
     }
 
-    /**
+    /*
      * Get user by email.
      */
     @Override
@@ -52,12 +49,8 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByEmail(email);
     }
 
-    /**
+    /*
      * Fetch user profile by ID.
-     * Throws ResourceNotFoundException if user does not exist.
-     *
-     * @param userId the user ID to fetch profile for
-     * @return UserProfileResponse DTO
      */
     @Override
     public UserProfileResponse getUserProfile(Long userId) {
@@ -66,13 +59,9 @@ public class UserServiceImpl implements UserService {
         return mapToProfileResponse(user);
     }
 
-    /**
+    /*
      * Update user profile information.
      * Updates name, headline, location, and avatarUrl.
-     *
-     * @param userId the ID of the user to update
-     * @param request the profile update form fields
-     * @return updated UserProfileResponse DTO
      */
     @Override
     @Transactional
@@ -98,12 +87,9 @@ public class UserServiceImpl implements UserService {
         return mapToProfileResponse(updatedUser);
     }
 
-    /**
+    /*
      * Upgrade a user to CREATOR role while retaining existing roles (e.g. "LEARNER,CREATOR").
      * Updates PostgreSQL database column `role` to preserve both LEARNER and CREATOR access.
-     *
-     * @param userId the user ID to upgrade
-     * @return updated UserProfileResponse DTO with role = "LEARNER,CREATOR"
      */
     @Override
     @Transactional
@@ -122,7 +108,7 @@ public class UserServiceImpl implements UserService {
         return mapToProfileResponse(updatedUser);
     }
 
-    /**
+    /*
      * Helper method to map User entity to UserProfileResponse DTO.
      */
     private UserProfileResponse mapToProfileResponse(User user) {

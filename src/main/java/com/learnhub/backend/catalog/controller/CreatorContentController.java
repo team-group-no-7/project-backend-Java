@@ -14,11 +14,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-/**
+/*
  * CreatorContentController — REST Controller for Content Authoring Studio & Creator Resource Management Grid.
- *
- * Base Path: /api/creator/content (matching Handbook Matrix 15A)
- * Implemented in pure Java with explicit constructor dependency injection (no Lombok).
  */
 @RestController
 @RequestMapping("/api/creator/content")
@@ -31,7 +28,7 @@ public class CreatorContentController {
         this.creatorContentService = creatorContentService;
     }
 
-    /**
+    /*
      * GET /api/creator/content/status
      * Health check endpoint for Content Studio module.
      */
@@ -40,7 +37,7 @@ public class CreatorContentController {
         return ResponseEntity.ok(ApiResponse.success("Content Authoring Studio Module is Active", "OK"));
     }
 
-    /**
+    /*
      * POST /api/creator/content/article
      * Publish a new Rich Text Article created in the frontend WYSIWYG editor.
      */
@@ -52,7 +49,7 @@ public class CreatorContentController {
                 .body(ApiResponse.success("Article published successfully", response));
     }
 
-    /**
+    /*
      * POST /api/creator/content/pdf
      * Upload a PDF file resource directly using multipart/form-data.
      */
@@ -76,7 +73,7 @@ public class CreatorContentController {
                 .body(ApiResponse.success("PDF resource uploaded and published successfully", response));
     }
 
-    /**
+    /*
      * POST /api/creator/content
      * Generic endpoint to create any learning resource via JSON.
      */
@@ -87,12 +84,9 @@ public class CreatorContentController {
                 .body(ApiResponse.success("Content resource created successfully", response));
     }
 
-    /**
+    /*
      * GET /api/creator/content/my-resources/{creatorId}
      * Fetch all resources created by a creator for the Management Grid.
-     *
-     * @param creatorId the creator user ID
-     * @return List of ContentResponse objects
      */
     @GetMapping("/my-resources/{creatorId}")
     public ResponseEntity<ApiResponse<List<ContentResponse>>> getMyResources(@PathVariable Long creatorId) {
@@ -100,13 +94,9 @@ public class CreatorContentController {
         return ResponseEntity.ok(ApiResponse.success("Creator resources retrieved successfully", resources));
     }
 
-    /**
+    /*
      * PUT /api/creator/content/{id}
      * Edit/Update an existing Article or PDF learning resource (title, description, contentBody, price, level, tags, status).
-     *
-     * @param id the content ID to update
-     * @param request JSON body with updated fields
-     * @return updated ContentResponse
      */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<ContentResponse>> updateContent(
@@ -116,13 +106,9 @@ public class CreatorContentController {
         return ResponseEntity.ok(ApiResponse.success("Content resource updated successfully", response));
     }
 
-    /**
+    /*
      * PATCH /api/creator/content/{id}/status
      * Toggle resource status between DRAFT and PUBLISHED.
-     *
-     * @param id the content ID
-     * @param request JSON body with target status ("DRAFT" or "PUBLISHED")
-     * @return updated ContentResponse
      */
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse<ContentResponse>> updateStatus(
@@ -132,12 +118,9 @@ public class CreatorContentController {
         return ResponseEntity.ok(ApiResponse.success("Resource status updated to " + request.getStatus(), response));
     }
 
-    /**
+    /*
      * DELETE /api/creator/content/{id}
      * Delete a learning resource and update category resource counts.
-     *
-     * @param id the content ID to delete
-     * @return success message
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<String>> deleteContent(@PathVariable Long id) {

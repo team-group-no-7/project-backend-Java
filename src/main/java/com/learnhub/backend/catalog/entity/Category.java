@@ -2,11 +2,8 @@ package com.learnhub.backend.catalog.entity;
 
 import jakarta.persistence.*;
 
-/**
+/*
  * Category Entity — Maps to the CATEGORIES table in the database.
- * Used to classify technical learning materials.
- *
- * Implemented in pure Java without Lombok annotations.
  */
 @Entity
 @Table(name = "categories")

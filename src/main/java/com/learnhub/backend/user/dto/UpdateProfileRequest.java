@@ -2,10 +2,8 @@ package com.learnhub.backend.user.dto;
 
 import jakarta.validation.constraints.NotBlank;
 
-/**
+/*
  * UpdateProfileRequest — DTO carrying user profile update form data.
- *
- * Implemented in pure Java with explicit getters, setters, and constructors (no Lombok).
  */
 public class UpdateProfileRequest {
 

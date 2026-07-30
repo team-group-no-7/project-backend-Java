@@ -12,8 +12,6 @@ import org.springframework.web.cors.CorsConfigurationSource;
 
 /**
  * SecurityConfig — Main Spring Security configuration for LearnHub.
- * 
- * Implemented using explicit Java constructor dependency injection (no Lombok).
  */
 @Configuration
 @EnableWebSecurity

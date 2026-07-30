@@ -11,12 +11,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
+/*
  * UserController — REST Controller for User Profile Module.
  * Dedicated package area for User Profile & Settings Management.
- *
- * Base Path: /api/users
- * Implemented in pure Java with explicit constructor dependency injection (no Lombok).
  */
 @RestController
 @RequestMapping("/api/users")
@@ -29,7 +26,7 @@ public class UserController {
         this.userService = userService;
     }
 
-    /**
+    /*
      * GET /api/users/status
      * Health check for User module.
      */
@@ -38,7 +35,7 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success("User Profile Module is Active", "OK"));
     }
 
-    /**
+    /*
      * GET /api/users/all
      * Fetch all users in the system.
      */
@@ -47,12 +44,9 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success("Users fetched successfully", userService.getAllUsers()));
     }
 
-    /**
+    /*
      * GET /api/users/{id}
      * View user profile by user ID.
-     *
-     * @param id the user ID
-     * @return UserProfileResponse containing user details
      */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<UserProfileResponse>> getUserProfile(@PathVariable Long id) {
@@ -60,13 +54,9 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success("User profile retrieved successfully", profile));
     }
 
-    /**
+    /*
      * PUT /api/users/{id}
      * Update user profile information (name, headline, location, avatarUrl).
-     *
-     * @param id the user ID
-     * @param request JSON body with updated profile fields
-     * @return updated UserProfileResponse
      */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<UserProfileResponse>> updateUserProfile(
@@ -76,12 +66,9 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success("User profile updated successfully", updatedProfile));
     }
 
-    /**
+    /*
      * PATCH /api/users/{id}/become-creator
      * Upgrades a user from LEARNER role to CREATOR role in PostgreSQL database.
-     *
-     * @param id the user ID
-     * @return updated UserProfileResponse with role = "CREATOR"
      */
     @PatchMapping("/{id}/become-creator")
     public ResponseEntity<ApiResponse<UserProfileResponse>> becomeCreator(@PathVariable Long id) {

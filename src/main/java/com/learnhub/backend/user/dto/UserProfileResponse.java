@@ -2,10 +2,8 @@ package com.learnhub.backend.user.dto;
 
 import java.time.LocalDateTime;
 
-/**
+/*
  * UserProfileResponse — DTO representing a user's public profile information.
- *
- * Implemented in pure Java with explicit getters, setters, and constructors (no Lombok).
  */
 public class UserProfileResponse {
 

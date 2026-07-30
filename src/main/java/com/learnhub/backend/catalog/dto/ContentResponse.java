@@ -2,10 +2,8 @@ package com.learnhub.backend.catalog.dto;
 
 import java.time.LocalDateTime;
 
-/**
+/*
  * ContentResponse — DTO returning detailed content information after creation/fetch.
- *
- * Implemented in pure Java with explicit getters, setters, and constructors (no Lombok).
  */
 public class ContentResponse {
 

@@ -3,11 +3,8 @@ package com.learnhub.backend.auth.entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-/**
+/*
  * RefreshToken Entity — Maps to the REFRESH_TOKENS table in the database.
- * 
- * Implemented in pure Java without Lombok annotations.
- * Provides explicit getters, setters, constructors, and toString().
  */
 @Entity
 @Table(name = "refresh_tokens")

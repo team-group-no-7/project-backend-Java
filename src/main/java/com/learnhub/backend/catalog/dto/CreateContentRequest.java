@@ -3,10 +3,8 @@ package com.learnhub.backend.catalog.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-/**
+/*
  * CreateContentRequest — DTO carrying content publishing form inputs (Articles or PDFs).
- *
- * Implemented in pure Java with explicit getters, setters, and constructors (no Lombok).
  */
 public class CreateContentRequest {
 
