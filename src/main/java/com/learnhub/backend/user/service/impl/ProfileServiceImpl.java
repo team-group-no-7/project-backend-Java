@@ -6,10 +6,13 @@ import com.learnhub.backend.user.repository.UserRepository;
 import com.learnhub.backend.user.dto.request.UpdateProfileRequest;
 import com.learnhub.backend.user.dto.response.ProfileResponse;
 import com.learnhub.backend.user.service.ProfileService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * ProfileServiceImpl — Implementation class for Learner Profile Service.
+ * Implemented in pure Java with explicit constructor injection (no Lombok).
+ */
 @Service
 public class ProfileServiceImpl implements ProfileService {
 
@@ -19,11 +22,9 @@ public class ProfileServiceImpl implements ProfileService {
         this.userRepository = userRepository;
     }
 
-
     @Override
     @Transactional(readOnly = true)
     public ProfileResponse getProfile(Long userId) {
-
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
@@ -32,9 +33,7 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     @Transactional
-    public ProfileResponse updateProfile(Long userId,
-                                         UpdateProfileRequest request) {
-
+    public ProfileResponse updateProfile(Long userId, UpdateProfileRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
@@ -49,7 +48,6 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     private ProfileResponse map(User user) {
-
         return new ProfileResponse(
                 user.getId(),
                 user.getName(),

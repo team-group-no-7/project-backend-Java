@@ -1,86 +1,69 @@
-# Learner Module Testing Guide
+# 🎓 LearnHub Learner Workspace Module (`com.learnhub.backend.user`)
 
-This guide contains step-by-step Postman request/response JSON examples for testing the Learner endpoints.
+> **Developer/Owner:** Riya  
+> **Branch:** `learner-dashboard-new`  
+> **Tech Stack:** Spring Boot 4.1.0, Spring Data JPA, PostgreSQL, JWT Authentication  
 
-## 1. Get Learner Dashboard
-**Endpoint:** `GET /api/learners/dashboard/{userId}`
+Welcome to the **Learner Workspace Module Testing Guide**! This document details all testing steps for Learner Profile, Learner Dashboard, Course Library, and Mentorship Doubt Sessions.
 
-**Request:**
-```http
-GET /api/learners/dashboard/1
-Accept: application/json
-```
+---
 
-**Response (200 OK):**
-```json
-{
-  "activeResources": 2,
-  "completedResources": 0,
-  "totalInvestment": 49.99,
-  "continueLearning": [
-    {
-      "contentId": 101,
-      "title": "Java Fundamentals",
-      "type": "COURSE",
-      "category": "Programming",
-      "fileUrl": "http://example.com/java-fund.pdf"
-    }
-  ]
-}
-```
+## 📌 Architecture Summary
 
-## 2. Get Learner Profile
-**Endpoint:** `GET /api/learners/profile/{userId}`
+- **Module Purpose:** Provides APIs for Learners to view/update their profile, check learning metrics (enrolled resources, investment), view purchased content library, and view booked mentorship sessions.
+- **Authentication:** All endpoints require a valid JWT Bearer Token:
+  `Authorization: Bearer <your-jwt-token>`
+- **No Lombok:** Written in 100% pure Java with explicit getters, setters, constructors, and `toString()` methods for CDAC Viva compliance.
 
-**Request:**
-```http
-GET /api/learners/profile/1
-Accept: application/json
-```
+---
 
-**Response (200 OK):**
-```json
-{
-  "id": 1,
-  "name": "Jane Doe",
-  "email": "jane@example.com",
-  "role": "LEARNER",
-  "avatarUrl": "http://example.com/avatar.jpg",
-  "headline": "Enthusiastic Learner",
-  "location": "New York"
-}
-```
+## 🧪 Step-by-Step API Testing Workflow
 
-## 3. Update Learner Profile
-**Endpoint:** `PUT /api/learners/profile/{userId}`
+---
 
-**Request:**
-```http
-PUT /api/learners/profile/1
-Content-Type: application/json
+### Step 1: Get Learner Profile
+- **HTTP Method:** `GET`
+- **URL:** `http://localhost:8080/api/learners/profile/1`
+- **Headers:** `Authorization: Bearer <your-jwt-token>`
+- **Expected Status:** `200 OK`
 
-{
-  "name": "Jane Doe Updated",
-  "headline": "Senior Learner",
-  "location": "Boston",
-  "avatarUrl": "http://example.com/avatar_new.jpg"
-}
-```
+---
 
-**Response (200 OK):**
-```json
-{
-  "id": 1,
-  "name": "Jane Doe Updated",
-  "email": "jane@example.com",
-  "role": "LEARNER",
-  "avatarUrl": "http://example.com/avatar_new.jpg",
-  "headline": "Senior Learner",
-  "location": "Boston"
-}
-```
+### Step 2: Update Learner Profile
+- **HTTP Method:** `PUT`
+- **URL:** `http://localhost:8080/api/learners/profile/1`
+- **Headers:** `Authorization: Bearer <your-jwt-token>`, `Content-Type: application/json`
+- **Body (JSON):**
+  ```json
+  {
+    "name": "Riya Sharma",
+    "headline": "Aspiring Full Stack Java Developer | CDAC Student",
+    "location": "Pune, India",
+    "avatarUrl": "https://api.dicebear.com/7.x/avataaars/svg?seed=Riya"
+  }
+  ```
+- **Expected Status:** `200 OK`
 
-## 4. Get Purchase History
-**Endpoint:** `GET /api/purchases/history`
+---
 
-*(Note: Assumes endpoint is implemented in billing module, test as per billing specs.)*
+### Step 3: Get Learner Dashboard Metrics
+- **HTTP Method:** `GET`
+- **URL:** `http://localhost:8080/api/learners/dashboard/1`
+- **Headers:** `Authorization: Bearer <your-jwt-token>`
+- **Expected Status:** `200 OK`
+
+---
+
+### Step 4: Get My Purchased Library
+- **HTTP Method:** `GET`
+- **URL:** `http://localhost:8080/api/purchases/library/1`
+- **Headers:** `Authorization: Bearer <your-jwt-token>`
+- **Expected Status:** `200 OK`
+
+---
+
+### Step 5: Get Booked Doubt Sessions
+- **HTTP Method:** `GET`
+- **URL:** `http://localhost:8080/api/sessions/1`
+- **Headers:** `Authorization: Bearer <your-jwt-token>`
+- **Expected Status:** `200 OK`
