@@ -65,11 +65,12 @@ public class CreatorContentController {
             @RequestParam(value = "level", defaultValue = "Beginner") String level,
             @RequestParam(value = "tags", required = false) String tags,
             @RequestParam(value = "status", defaultValue = "PUBLISHED") String status,
-            @RequestParam("categoryId") Long categoryId,
+            @RequestParam(value = "categoryId", required = false) Long categoryId,
+            @RequestParam(value = "categoryName", required = false) String categoryName,
             @RequestParam("creatorId") Long creatorId) {
 
         ContentResponse response = creatorContentService.uploadPdfResource(
-                file, title, description, price, level, tags, status, categoryId, creatorId);
+                file, title, description, price, level, tags, status, categoryId, categoryName, creatorId);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("PDF resource uploaded and published successfully", response));

@@ -29,6 +29,7 @@ public interface CreatorContentService {
             String tags,
             String status,
             Long categoryId,
+            String categoryName,
             Long creatorId);
 
     /**

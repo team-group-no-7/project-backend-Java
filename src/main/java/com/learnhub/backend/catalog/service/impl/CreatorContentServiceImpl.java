@@ -98,6 +98,7 @@ public class CreatorContentServiceImpl implements CreatorContentService {
             String tags,
             String status,
             Long categoryId,
+            String categoryName,
             Long creatorId) {
 
         if (file == null || file.isEmpty()) {
@@ -116,6 +117,7 @@ public class CreatorContentServiceImpl implements CreatorContentService {
         request.setTags(tags);
         request.setStatus(status != null ? status : "PUBLISHED");
         request.setCategoryId(categoryId);
+        request.setCategoryName(categoryName);
         request.setCreatorId(creatorId);
 
         return publishContent(request);
