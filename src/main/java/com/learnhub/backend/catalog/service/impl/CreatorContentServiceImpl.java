@@ -56,9 +56,8 @@ public class CreatorContentServiceImpl implements CreatorContentService {
         userRepository.findById(request.getCreatorId())
                 .orElseThrow(() -> new ResourceNotFoundException("Creator not found with id: " + request.getCreatorId()));
 
-        // Step 2: Verify Category exists
-        Category category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + request.getCategoryId()));
+        // Step 2: Smart Category Resolution (by Name or by ID, with Auto-Creation)
+        Category category = resolveCategory(request.getCategoryId(), request.getCategoryName());
 
         // Step 3: Build Content Entity
         Content content = new Content();
@@ -72,7 +71,7 @@ public class CreatorContentServiceImpl implements CreatorContentService {
         content.setLevel(request.getLevel() != null ? request.getLevel() : "Beginner");
         content.setTags(request.getTags());
         content.setStatus(request.getStatus() != null ? request.getStatus() : "PUBLISHED");
-        content.setCategoryId(request.getCategoryId());
+        content.setCategoryId(category.getId());
         content.setCreatorId(request.getCreatorId());
 
         // Step 4: Save Content to database
@@ -137,7 +136,7 @@ public class CreatorContentServiceImpl implements CreatorContentService {
     }
 
     /**
-     * Update/Edit existing content resource details (Title, Description, Rich Text HTML, Price, Level, Tags, Status).
+     * Update/Edit existing content resource details (Title, Description, Rich Text HTML, Price, Level, Tags, Status, Category).
      */
     @Override
     @Transactional
@@ -175,10 +174,9 @@ public class CreatorContentServiceImpl implements CreatorContentService {
         if (request.getStatus() != null) {
             content.setStatus(request.getStatus());
         }
-        if (request.getCategoryId() != null) {
-            categoryRepository.findById(request.getCategoryId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + request.getCategoryId()));
-            content.setCategoryId(request.getCategoryId());
+        if (request.getCategoryName() != null || request.getCategoryId() != null) {
+            Category category = resolveCategory(request.getCategoryId(), request.getCategoryName());
+            content.setCategoryId(category.getId());
         }
 
         Content updatedContent = contentRepository.save(content);
@@ -217,6 +215,23 @@ public class CreatorContentServiceImpl implements CreatorContentService {
         }
 
         contentRepository.delete(content);
+    }
+
+    /**
+     * Helper method to resolve Category by Name or ID with automatic creation if missing.
+     */
+    private Category resolveCategory(Long categoryId, String categoryName) {
+        if (categoryName != null && !categoryName.trim().isEmpty()) {
+            String trimmedName = categoryName.trim();
+            return categoryRepository.findByName(trimmedName)
+                    .orElseGet(() -> categoryRepository.save(new Category(trimmedName)));
+        } else if (categoryId != null) {
+            return categoryRepository.findById(categoryId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + categoryId));
+        } else {
+            return categoryRepository.findByName("General")
+                    .orElseGet(() -> categoryRepository.save(new Category("General")));
+        }
     }
 
     /**

@@ -24,8 +24,8 @@ public class CreateContentRequest {
     private String tags;
     private String status = "PUBLISHED"; // DRAFT or PUBLISHED
 
-    @NotNull(message = "Category ID is required")
     private Long categoryId;
+    private String categoryName; // e.g. "Development", "Data Science", "AI Engineering"
 
     @NotNull(message = "Creator ID is required")
     private Long creatorId;
@@ -35,7 +35,7 @@ public class CreateContentRequest {
     }
 
     // Parameterized Constructor
-    public CreateContentRequest(String title, String description, String previewText, String contentBody, String fileUrl, Double price, String type, String level, String tags, String status, Long categoryId, Long creatorId) {
+    public CreateContentRequest(String title, String description, String previewText, String contentBody, String fileUrl, Double price, String type, String level, String tags, String status, Long categoryId, String categoryName, Long creatorId) {
         this.title = title;
         this.description = description;
         this.previewText = previewText;
@@ -47,6 +47,7 @@ public class CreateContentRequest {
         this.tags = tags;
         this.status = status;
         this.categoryId = categoryId;
+        this.categoryName = categoryName;
         this.creatorId = creatorId;
     }
 
@@ -139,6 +140,14 @@ public class CreateContentRequest {
         this.categoryId = categoryId;
     }
 
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
+
     public Long getCreatorId() {
         return creatorId;
     }
@@ -155,6 +164,7 @@ public class CreateContentRequest {
                 ", type='" + type + '\'' +
                 ", status='" + status + '\'' +
                 ", categoryId=" + categoryId +
+                ", categoryName='" + categoryName + '\'' +
                 ", creatorId=" + creatorId +
                 '}';
     }

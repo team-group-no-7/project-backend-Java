@@ -3,7 +3,7 @@ package com.learnhub.backend.catalog.dto;
 import jakarta.validation.constraints.NotBlank;
 
 /**
- * UpdateContentRequest — DTO carrying resource edit form data (Title, Description, Rich Text HTML, Price, Level, Tags, Status).
+ * UpdateContentRequest — DTO carrying resource edit form data (Title, Description, Rich Text HTML, Price, Level, Tags, Status, Category).
  *
  * Implemented in pure Java with explicit getters, setters, and constructors (no Lombok).
  */
@@ -23,13 +23,14 @@ public class UpdateContentRequest {
     private String tags;
     private String status;      // DRAFT or PUBLISHED
     private Long categoryId;
+    private String categoryName;
 
     // Default Constructor (Required by Jackson for JSON deserialization)
     public UpdateContentRequest() {
     }
 
     // Parameterized Constructor
-    public UpdateContentRequest(String title, String description, String previewText, String contentBody, String fileUrl, Double price, String type, String level, String tags, String status, Long categoryId) {
+    public UpdateContentRequest(String title, String description, String previewText, String contentBody, String fileUrl, Double price, String type, String level, String tags, String status, Long categoryId, String categoryName) {
         this.title = title;
         this.description = description;
         this.previewText = previewText;
@@ -41,6 +42,7 @@ public class UpdateContentRequest {
         this.tags = tags;
         this.status = status;
         this.categoryId = categoryId;
+        this.categoryName = categoryName;
     }
 
     // Getters and Setters
@@ -132,6 +134,14 @@ public class UpdateContentRequest {
         this.categoryId = categoryId;
     }
 
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
+
     @Override
     public String toString() {
         return "UpdateContentRequest{" +
@@ -139,6 +149,7 @@ public class UpdateContentRequest {
                 ", price=" + price +
                 ", status='" + status + '\'' +
                 ", categoryId=" + categoryId +
+                ", categoryName='" + categoryName + '\'' +
                 '}';
     }
 }
