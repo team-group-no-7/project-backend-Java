@@ -13,7 +13,8 @@ Welcome to the **Content Authoring Studio Testing Guide**! This document provide
 - **Module Purpose:** Enables Content Creators to publish Rich Text Articles (WYSIWYG editor input) and Multipart PDF document resources.
 - **Authentication:** All content creation endpoints require a valid JWT Bearer Token passed in the HTTP request header:
   `Authorization: Bearer <your-jwt-token>`
-- **Category Auto-Increment:** Whenever a creator publishes a resource under a `categoryId`, the database `resource_count` for that category is automatically incremented.
+- **Smart Category Resolution:** Creators can specify either `categoryName` (e.g. `"Development"` or `"Interview Prep"`) or `categoryId` (e.g. `1`). If a new category name is provided, PostgreSQL automatically creates the new Category with an auto-incremented ID!
+- **Category Auto-Increment:** Whenever a creator publishes a resource under a category, the database `resource_count` for that category is automatically incremented.
 - **Status Support:** Resources support `DRAFT` and `PUBLISHED` status.
 
 ---
@@ -31,9 +32,6 @@ Welcome to the **Content Authoring Studio Testing Guide**! This document provide
    Register or login via Auth endpoints to get a JWT token:
    - `POST http://localhost:8080/api/auth/login`
    - Copy the `"token"` string.
-
-3. **Database Seed Data Requirement**:
-   Ensure Category ID `1` exists in the `categories` table (seeded via `schema.sql` / `data.sql`).
 
 ---
 
@@ -59,7 +57,7 @@ Verify that the Content Studio module is active.
 
 ---
 
-### Step 2: Publish Rich Text WYSIWYG Article
+### Step 2: Publish Rich Text WYSIWYG Article (Using `categoryName`)
 Publish an article written using the frontend WYSIWYG rich text editor.
 
 - **HTTP Method:** `POST`
@@ -79,7 +77,7 @@ Publish an article written using the frontend WYSIWYG rich text editor.
     "level": "Intermediate",
     "tags": "Java, Spring Boot, Microservices",
     "status": "PUBLISHED",
-    "categoryId": 1,
+    "categoryName": "Development",
     "creatorId": 1
   }
   ```
@@ -155,7 +153,7 @@ Upload a PDF document directly using multipart form data in Postman.
 | Method | Endpoint | Access | Content-Type | Description |
 |:---|:---|:---|:---|:---|
 | `GET` | `/api/creator/content/status` | Public | None | Health check for Content Studio |
-| `POST` | `/api/creator/content/article` | JWT Protected | `application/json` | Publish Rich Text WYSIWYG Article |
+| `POST` | `/api/creator/content/article` | JWT Protected | `application/json` | Publish Rich Text WYSIWYG Article (`categoryName` or `categoryId`) |
 | `POST` | `/api/creator/content/pdf` | JWT Protected | `multipart/form-data` | Upload PDF Document File |
 | `POST` | `/api/creator/content` | JWT Protected | `application/json` | Generic Resource Creation Endpoint |
 
