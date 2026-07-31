@@ -16,11 +16,11 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Serve files from uploads/pdfs/ directory at /uploads/pdfs/** URL
-        Path uploadDir = Paths.get("uploads/pdfs").toAbsolutePath();
+        // Serve files from uploads/ directory at /uploads/** URL
+        Path uploadDir = Paths.get("uploads").toAbsolutePath();
         String uploadPath = uploadDir.toUri().toString();
 
-        registry.addResourceHandler("/uploads/pdfs/**")
+        registry.addResourceHandler("/uploads/**")
                 .addResourceLocations(uploadPath + "/")
                 .setCachePeriod(3600); // 1 hour cache
     }

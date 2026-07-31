@@ -37,6 +37,9 @@ public class SecurityConfig {
             // Step 2: Disable CSRF — not needed for stateless JWT APIs
             .csrf(csrf -> csrf.disable())
 
+            // Step 2b: Allow frame options for PDF viewer iframe
+            .headers(headers -> headers.frameOptions(frame -> frame.disable()))
+
             // Step 3: Set session management to STATELESS
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
