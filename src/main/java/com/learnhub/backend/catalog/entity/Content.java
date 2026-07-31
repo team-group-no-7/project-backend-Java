@@ -1,6 +1,5 @@
 package com.learnhub.backend.catalog.entity;
 
-import com.learnhub.backend.catalog.enums.ContentType;
 import com.learnhub.backend.user.entity.User;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
@@ -29,13 +28,10 @@ public class Content {
     @Column(name = "file_url")
     private String fileUrl;
 
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price = BigDecimal.ZERO;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "type")
-    private ContentType type;
-
+    private String type;
     private String level;
     private String tags;
 
@@ -79,7 +75,7 @@ public class Content {
     public Content() {
     }
 
-    public Content(Long id, String title, String description, String previewText, String contentBody, String fileUrl, BigDecimal price, ContentType type, String level, String tags, String status, Boolean featured, Boolean isTrending, BigDecimal rating, Integer reviewsCount, Integer learnersCount, String approvalStatus, Category category, User creator, LocalDateTime createdAt) {
+    public Content(Long id, String title, String description, String previewText, String contentBody, String fileUrl, BigDecimal price, String type, String level, String tags, String status, Boolean featured, Boolean isTrending, BigDecimal rating, Integer reviewsCount, Integer learnersCount, String approvalStatus, Category category, User creator, LocalDateTime createdAt) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -129,8 +125,8 @@ public class Content {
     public BigDecimal getPrice() { return price; }
     public void setPrice(BigDecimal price) { this.price = price; }
 
-    public ContentType getType() { return type; }
-    public void setType(ContentType type) { this.type = type; }
+    public String getType() { return type; }
+    public void setType(String type) { this.type = type; }
 
     public String getLevel() { return level; }
     public void setLevel(String level) { this.level = level; }

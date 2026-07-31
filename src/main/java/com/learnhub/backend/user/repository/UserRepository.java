@@ -2,14 +2,12 @@ package com.learnhub.backend.user.repository;
 
 import com.learnhub.backend.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
+import java.util.List;
 import java.util.Optional;
 
-/**
- * UserRepository — Data access interface for User entity.
- * Handles database operations for user profiles.
- */
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
@@ -17,7 +15,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByEmail(String email);
 
-    @org.springframework.data.jpa.repository.Query("SELECT u FROM User u WHERE " +
+    @Query("SELECT u FROM User u WHERE " +
            "(cast(:search as string) IS NULL OR LOWER(u.name) LIKE LOWER(CONCAT('%', cast(:search as string), '%')) OR LOWER(u.email) LIKE LOWER(CONCAT('%', cast(:search as string), '%')))")
-    java.util.List<User> searchUsers(@org.springframework.data.repository.query.Param("search") String search);
+    List<User> searchUsers(@Param("search") String search);
+
+    List<User> findByRole(String role);
+
+    long countByRole(String role);
 }
