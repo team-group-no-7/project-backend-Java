@@ -116,6 +116,13 @@ public class CatalogServiceImpl implements CatalogService {
         if (content.getCategory() != null) {
             response.setCategoryName(content.getCategory().getName());
         }
+
+        if (content.getCreator() != null) {
+            response.setCreatorName(content.getCreator().getName());
+            response.setCreatorAvatar(content.getCreator().getAvatarUrl());
+        } else {
+            response.setCreatorName("Unknown");
+        }
         
         return response;
     }

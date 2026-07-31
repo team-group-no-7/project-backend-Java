@@ -52,6 +52,12 @@ public class ContentResponse {
     @JsonProperty("created_at")
     private LocalDateTime createdAt;
 
+    @JsonProperty("creator_name")
+    private String creatorName;
+
+    @JsonProperty("creator_avatar")
+    private String creatorAvatar;
+
     public ContentResponse() {
     }
 
@@ -252,5 +258,21 @@ public class ContentResponse {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getCreatorName() {
+        return creatorName;
+    }
+
+    public void setCreatorName(String creatorName) {
+        this.creatorName = creatorName;
+    }
+
+    public String getCreatorAvatar() {
+        return creatorAvatar;
+    }
+
+    public void setCreatorAvatar(String creatorAvatar) {
+        this.creatorAvatar = creatorAvatar;
     }
 }

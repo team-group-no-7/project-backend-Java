@@ -265,7 +265,7 @@ public class CreatorContentServiceImpl implements CreatorContentService {
      * Helper method to map Content entity to ContentResponse DTO.
      */
     private ContentResponse mapToResponse(Content content) {
-        return new ContentResponse(
+        ContentResponse response = new ContentResponse(
                 content.getId(),
                 content.getTitle(),
                 content.getDescription(),
@@ -286,5 +286,15 @@ public class CreatorContentServiceImpl implements CreatorContentService {
                 content.getCreatorId(),
                 content.getCreatedAt()
         );
+        if (content.getCreator() != null) {
+            response.setCreatorName(content.getCreator().getName());
+            response.setCreatorAvatar(content.getCreator().getAvatarUrl());
+        } else {
+            response.setCreatorName("Unknown");
+        }
+        if (content.getCategory() != null) {
+            response.setCategoryName(content.getCategory().getName());
+        }
+        return response;
     }
 }
