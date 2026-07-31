@@ -73,6 +73,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/sessions/**").permitAll()
                 .requestMatchers("/api/creator/content/**").permitAll()
                 .requestMatchers("/api/admin/**").permitAll()
+                .requestMatchers("/api/qa/**").permitAll()
                 .requestMatchers("/uploads/**").permitAll()
 
                 // PROTECTED ENDPOINTS — JWT token required for everything else
