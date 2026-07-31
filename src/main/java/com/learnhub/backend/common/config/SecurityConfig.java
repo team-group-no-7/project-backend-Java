@@ -58,7 +58,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/mentorship/status").permitAll()
                 .requestMatchers("/api/discussion/status").permitAll()
 
-                // Public content and payment endpoints
+                // Public content, payment, purchases, sessions and file endpoints
                 .requestMatchers("/api/public/**").permitAll()
                 .requestMatchers("/api/payment/**").permitAll()
                 .requestMatchers("/api/billing/**").permitAll()
@@ -66,6 +66,10 @@ public class SecurityConfig {
                 .requestMatchers("/api/contents").permitAll()
                 .requestMatchers("/api/categories").permitAll()
                 .requestMatchers("/api/creators/**").permitAll()
+                .requestMatchers("/api/purchases/**").permitAll()
+                .requestMatchers("/api/sessions/**").permitAll()
+                .requestMatchers("/api/creator/content/**").permitAll()
+                .requestMatchers("/uploads/**").permitAll()
 
                 // PROTECTED ENDPOINTS — JWT token required for everything else
                 .anyRequest().authenticated()

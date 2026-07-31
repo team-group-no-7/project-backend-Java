@@ -1,0 +1,367 @@
+﻿Analyzing Microservice Potential.
+To structure your Spring Boot monolithic project so that it can be easily decomposed into microservices in the future, you should implement a Modular Monolith architecture.
+
+
+  In a traditional monolith, packages are structured horizontally by technical layers (controllers, services, repositories, entities), which tightly couples
+  the entire application. In a Modular Monolith, packages are structured vertically by business domains (modules).
+
+
+  Here is the architectural plan to implement this in your backend project:
+  ──────
+  ### 📦 1. Vertical Domain Package Structure
+
+
+  Under com.learnhub.backend, each business domain gets its own self-contained package. Each package acts as a logical boundary:
+
+
+    com.learnhub.backend/
+    │
+    ├── BackendApplication.java       # Main class
+    │
+    ├── common/                    # Shared utility classes (JWT, CORS, Custom Exceptions)
+    │   ├── config/
+    │   ├── exception/
+    │   └── util/
+    │
+    ├── auth/               # Module 1A: Authentication, JWT & Refresh Tokens
+     │   ├── controller/     # AuthController (/api/auth)
+     │   ├── service/        # AuthService
+     │   ├── repository/     # RefreshTokenRepository
+     │   ├── entity/         # RefreshToken
+     │   └── dto/
+     │
+    ├── user/                         # Module 1: User Profile & Authentication (User Service)
+    │   ├── controller/
+    │   ├── service/
+    │   ├── repository/
+    │   ├── entity/ (User)
+    │   └── dto/
+    │
+    ├── catalog/         # Module 2: Resource Catalog & Content Studio (Catalog Service)
+    │   ├── controller/
+    │   ├── service/
+    │   ├── repository/
+    │   ├── entity/ (Content, Category, CreatorAchievement, CreatorSocials)
+    │   └── dto/
+    │
+    │
+    │
+    ├── billing/             # Module 3: Checkout, Order Ledger & Razorpay (Billing Service)
+    │   ├── controller/
+    │   ├── service/
+    │   ├── repository/
+    │   ├── entity/ (Purchase)
+    │   └── dto/
+    │
+    ├── mentorship/      # Module 4: Doubt Slots & Jitsi Call Orchestration (Mentorship Service)
+    │   ├── controller/
+    │   ├── service/
+    │   ├── repository/
+    │   ├── entity/ (DoubtSession)
+    │   └── dto/
+    │
+    └── discussion/              # Module 5: Forum Q&A Threads (Discussion/Q&A Service)
+        ├── controller/
+        ├── service/
+        ├── repository/
+        ├── entity/ (Question, DiscussionReply, Review)
+        └── dto/
+    ──────
+  ### 🚀 2. Rules for Making Microservices Transition Easy Later
+
+
+  1. Minimize Cross-Module Entity Joins[a]:
+      • Avoid using @ManyToOne or @ManyToMany associations between entities in different modules. For example, instead of linking Purchase in the billing module directly to the User object in the user module, just store Long userId in the Purchase entity.
+      • Why? If you migrate billing and user to separate microservices databases, foreign key constraints and SQL joins across databases will be impossible.
+      Store simple IDs for cross-module relations.
+  2. Define Clear Inter-Module Communication:[b]
+      • When one module needs data from another, they should communicate via a Service interface.
+      • For example, the billing module can call UserService.existsById(userId) via a Java interface. Later, when separated, that method call is replaced with a REST API call or an RPC client (like Spring Cloud OpenFeign) with minimal refactoring.
+  
+
+
+3. Database Schemas per Module (Logical Separation)[c]:
+      • Keep database tables prefix-scoped by module (e.g. usr_users, cat_contents, bil_purchases). If possible, configure separate PostgreSQL schemas or logically separate the tables so they are not coupled by shared SQL views.
+
+
+  ──────
+  ### 🎯 3. Proposed Entities to Implement in Phase 1
+
+
+  We will translate the database mappings into these specific Java modules:
+
+
+  • user module: Contains the core User model, JWT token security, role checking (Learner/Creator/Admin).
+  • catalog module: Contains Category and Content models.
+  • billing module: Contains Purchase mapping, exposing checkout order and receipt records.
+  • mentorship module: Contains DoubtSession mapping, integrating time slot verification and Jitsi room generation.
+  • discussion module: Contains Question, DiscussionReply, and Review models.
+
+
+
+
+
+
+
+
+
+
+To take your CDAC final project from a local prototype all the way to cloud deployment, follow this comprehensive step-by-step roadmap:
+  ──────
+  ## 🗺️ Step-by-Step Backend Development & Deployment Roadmap graph TD (Top-Down):
+        A[Phase 1: DB & Env Config] --> B[Phase 2: Entity & Repository Layer]
+        B --> C[Phase 3: Service & Controller Logic]
+        C --> D[Phase 4: JWT Security & Roles]
+        D --> E[Phase 5: Jitsi & Razorpay Mocking]
+        E --> F[Phase 6: Frontend Integration]
+        F --> G[Phase 7: Dockerization]
+        G --> H[Phase 8: Cloud Deployment]
+    
+  
+
+
+
+
+  ### 📌 Phase 1: Database and Local Environment Config
+
+
+  • Objective: Get your workspace, PostgreSQL, and project settings running.
+  • Steps:
+      1. Create a database in PostgreSQL (learnhub_db).
+      2. Configure connection settings in application.properties.
+      3. Ensure Maven dependencies (Lombok, Spring Web, Data JPA, PostgreSQL Driver) are defined in pom.xml.
+
+
+
+
+  ### 📌 Phase 2: Domain Entity Layer & Repositories
+
+
+  • Objective: Create database models using a modular structure.
+  • Steps:
+      1. Create the User entity under the com.learnhub.backend.user package.
+      2. Create the Category and Content entities in the catalog package.
+      3. Implement JpaRepository interfaces for each module to enable database actions out-of-the-box.
+
+
+
+
+  ### 📌 Phase 3: Service & Controller Logic
+
+
+  • Objective: Implement business rules and expose REST endpoints.
+  • Steps:
+      1. Write the service layers for catalog lookup, resource uploads, Q&A posting, and bookings.
+      2. Build REST Controllers to expose endpoints (e.g. /api/contents, /api/questions, /api/sessions).[d]
+      3. Implement Global Exception Handling to return user-friendly error bodies.
+
+
+
+
+  ### 📌 Phase 4: JWT Security & CORS Configuration
+
+
+  • Objective: Set up login and protect user data.
+  • Steps:
+      1. Write class config files for CORS to allow your React application to talk to the backend.
+      2. Implement Spring Security filter chains.
+      3. Generate JWT tokens upon login via /api/auth/login. Verify tokens on subsequent API calls using headers (Authorization: Bearer <token>).
+
+
+
+
+  ### 📌 Phase 5: Jitsi Call & Razorpay Integrations
+
+
+  • Objective: Connect payment hooks and video sessions.
+  • Steps:
+      1. Implement simulated Razorpay transaction captures under the billing service.
+      2. Create Jitsi Meet room generation logic in the mentorship service (e.g. generating a secure, random meeting hash).
+
+
+
+
+  ### 📌 Phase 6: Frontend-Backend Integration
+
+
+  • Objective: Connect the frontend GitHub repository to the backend.
+  • Steps:
+      1. Create a shared API client configuration in React (e.g., using axios or fetch with a base URL matching http://localhost:8080).
+      2. Replace frontend mock state setters (like localStorage dummy credentials) with HTTP calls to your Spring Boot REST APIs.
+      3. Merge frontend pull requests in the GitHub organization.
+
+
+
+
+  ### 📌 Phase 7: Production Build & Dockerization
+
+
+  • Objective: Package the application for easy deployment.
+  • Steps:
+      1. Compile the Spring Boot application using ./mvnw clean package to produce a runnable .jar file.
+      2. Create a Dockerfile for the backend:
+        FROM openjdk:17-jdk-slim
+        COPY target/backend-*.jar app.jar
+        EXPOSE 8080
+        ENTRYPOINT ["java","-jar","/app.jar"]
+        
+      3. Create a docker-compose.yml to orchestrate both the Spring Boot app and the PostgreSQL database.
+
+
+
+
+  
+
+
+### 📌 Phase 8: Cloud Deployment
+
+
+  • Objective: Make your app publicly accessible.
+  • Steps:
+      1. Deploy the PostgreSQL database to a managed cloud database (e.g. RDS on AWS, Supabase, or Render PostgreSQL).
+      2. Deploy the containerized Spring Boot app to a hosting platform (e.g. AWS Elastic Beanstalk, Render, or Railway).
+      3. Deploy the static React frontend to Vercel, Netlify, or AWS S3/CloudFront.
+      4. Configure production environment variables in your hosting dashboard (e.g., database URLs, credentials, JWT secrets).
+
+
+───────────────────────────────────────────────────────
+───────────────────────────────────────────────────────
+> all things hope dosen't cost me anything,
+
+
+  You do not need to spend any money. We will design this entire project and its deployment pipeline using 100% free-tier and open-source tools.
+
+
+  Here is how we will keep the cost at $0:
+
+
+  ### 💻 1. Local Development ($0)
+
+
+  • IDE: VS Code, IntelliJ IDEA Community Edition, or Eclipse (all free).
+  • Database: PostgreSQL community edition running locally on your machine.
+  • Backend: Spring Boot framework (open-source and free).
+
+
+  ### 🚀 2. Free Cloud Hosting Services ($0)
+
+
+  • Frontend Hosting: Vercel or Netlify. They offer extremely fast, free hosting for React web applications directly linked to your GitHub repository.
+  • Database Hosting: Supabase or Neon. They provide a free, cloud-hosted PostgreSQL database.
+  • Backend Hosting: Render or Railway.
+      • Render offers a free tier for hosting web services (like Spring Boot Java APIs) that auto-deploys when you push code to GitHub.
+  • Video Conference Calls: Jitsi Meet API is free, open-source, and does not require paid developer keys.
+
+
+
+
+  ### 🛡️ 3. Payment Mocking ($0)
+
+
+  • Razorpay Sandbox: We will keep the Razorpay configuration in "Test Mode". You can run simulated checkout checkouts and check success/failure flows without
+  exchanging any real money.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Backend task distribution:
+Yashwant:
+* Auth endpoints.
+* Creator db endpoints, under this following endpoints are: 
+   * Dashboard.
+   * Content studio.
+   * Management GRID (My resource mgmt).
+   * Creator Profile:
+      * Profile info.
+      * Content list.
+      * Account settings.
+
+
+Riya:
+* Leaner db endpoints, under this following endpoints:
+   * Dashboard.
+   * Purchase history.
+   * Leaner Profile endpoints, under this following endpoints are::
+      * Profile info.
+      * My library:
+         * Content viewer page.
+      * Sessions.
+
+
+Sakshi:
+* Landing page endpoints.
+* Resource detail page endpoints.
+* Payment module endpoints, under this following endpoints are:
+   * Billing checkout page.
+   * Razorpay API setup.
+   * And others related.
+
+
+Shubham:
+* Marketplace endpoints.
+* Public Creator profile endpoints : View Profile > Creator profile > In which learner book session.
+* Admin DB module endpoints, under this following endpoints are:
+   * Analytics.
+   * Users.
+   * Resources.
+   * Transactions.
+* Session module: (Both Creator & Learner side)
+Note: If any new feature/ functionality (either small or big) is found while working and lies under must have functionalities then we will discuss.
+
+
+
+
+[a]Important point. must read.
+[b]Important point. must read.
+[c]Important point.must read.
+[d]Aashish Sir also recommend like this.
