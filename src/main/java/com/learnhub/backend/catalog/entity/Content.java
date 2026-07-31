@@ -85,7 +85,6 @@ public class Content {
         this.price = price;
         this.type = type;
         this.level = level;
-        this.tags = tags;
         this.status = status;
         this.featured = featured;
         this.isTrending = isTrending;
@@ -138,9 +137,12 @@ public class Content {
     public void setStatus(String status) { this.status = status; }
 
     public Boolean getFeatured() { return featured; }
+    public Boolean isFeatured() { return featured != null && featured; }
     public void setFeatured(Boolean featured) { this.featured = featured; }
 
+    public Boolean getTrending() { return isTrending; }
     public Boolean getIsTrending() { return isTrending; }
+    public Boolean isTrending() { return isTrending != null && isTrending; }
     public void setIsTrending(Boolean isTrending) { this.isTrending = isTrending; }
 
     public BigDecimal getRating() { return rating; }

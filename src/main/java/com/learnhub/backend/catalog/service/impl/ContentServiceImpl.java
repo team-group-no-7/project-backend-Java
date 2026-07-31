@@ -27,7 +27,7 @@ public class ContentServiceImpl implements ContentService {
     private CatalogResponse mapToCatalog(Content content) {
         String categoryName = content.getCategory() != null ? content.getCategory().getName() : "General";
         String creatorName = content.getCreator() != null ? content.getCreator().getName() : "LearnHub Creator";
-        String typeName = content.getType() != null ? content.getType().name() : "ARTICLE";
+        String typeName = content.getType() != null ? content.getType() : "ARTICLE";
 
         return new CatalogResponse(
                 content.getId(),
@@ -47,7 +47,7 @@ public class ContentServiceImpl implements ContentService {
                 .orElseThrow(() -> new RuntimeException("Content not found with id: " + contentId));
 
         String categoryName = content.getCategory() != null ? content.getCategory().getName() : "General";
-        String typeName = content.getType() != null ? content.getType().name() : "ARTICLE";
+        String typeName = content.getType() != null ? content.getType() : "ARTICLE";
 
         return new ContentReaderResponse(
                 content.getId(),

@@ -1,6 +1,7 @@
 package com.learnhub.backend.catalog.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public class ContentResponse {
@@ -18,7 +19,7 @@ public class ContentResponse {
     @JsonProperty("file_url")
     private String fileUrl;
 
-    private Double price;
+    private BigDecimal price;
     private String type;
     private String level;
     private String tags;
@@ -28,7 +29,7 @@ public class ContentResponse {
     @JsonProperty("is_trending")
     private Boolean isTrending;
 
-    private Double rating;
+    private BigDecimal rating;
 
     @JsonProperty("reviews_count")
     private Integer reviewsCount;
@@ -36,8 +37,14 @@ public class ContentResponse {
     @JsonProperty("learners_count")
     private Integer learnersCount;
 
+    @JsonProperty("approval_status")
+    private String approvalStatus;
+
     @JsonProperty("category_name")
     private String categoryName;
+
+    @JsonProperty("category_id")
+    private Long categoryId;
 
     @JsonProperty("creator_id")
     private Long creatorId;
@@ -48,7 +55,8 @@ public class ContentResponse {
     public ContentResponse() {
     }
 
-    public ContentResponse(Long id, String title, String description, String previewText, String contentBody, String fileUrl, Double price, String type, String level, String tags, String status, Boolean featured, Boolean isTrending, Double rating, Integer reviewsCount, Integer learnersCount, String categoryName, Long creatorId, LocalDateTime createdAt) {
+    // Constructor matching CreatorContentServiceImpl's call
+    public ContentResponse(Long id, String title, String description, String previewText, String contentBody, String fileUrl, BigDecimal price, String type, String level, String tags, String status, Boolean featured, Boolean isTrending, BigDecimal rating, Integer reviewsCount, Integer learnersCount, Long categoryId, Long creatorId, LocalDateTime createdAt) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -65,7 +73,7 @@ public class ContentResponse {
         this.rating = rating;
         this.reviewsCount = reviewsCount;
         this.learnersCount = learnersCount;
-        this.categoryName = categoryName;
+        this.categoryId = categoryId;
         this.creatorId = creatorId;
         this.createdAt = createdAt;
     }
@@ -118,11 +126,11 @@ public class ContentResponse {
         this.fileUrl = fileUrl;
     }
 
-    public Double getPrice() {
+    public BigDecimal getPrice() {
         return price;
     }
 
-    public void setPrice(Double price) {
+    public void setPrice(BigDecimal price) {
         this.price = price;
     }
 
@@ -174,11 +182,19 @@ public class ContentResponse {
         this.isTrending = isTrending;
     }
 
-    public Double getRating() {
+    public Boolean getTrending() {
+        return isTrending;
+    }
+
+    public void setTrending(Boolean trending) {
+        this.isTrending = trending;
+    }
+
+    public BigDecimal getRating() {
         return rating;
     }
 
-    public void setRating(Double rating) {
+    public void setRating(BigDecimal rating) {
         this.rating = rating;
     }
 
@@ -198,12 +214,28 @@ public class ContentResponse {
         this.learnersCount = learnersCount;
     }
 
+    public String getApprovalStatus() {
+        return approvalStatus;
+    }
+
+    public void setApprovalStatus(String approvalStatus) {
+        this.approvalStatus = approvalStatus;
+    }
+
     public String getCategoryName() {
         return categoryName;
     }
 
     public void setCategoryName(String categoryName) {
         this.categoryName = categoryName;
+    }
+
+    public Long getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
     }
 
     public Long getCreatorId() {

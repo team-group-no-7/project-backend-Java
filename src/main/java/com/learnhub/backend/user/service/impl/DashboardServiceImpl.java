@@ -39,7 +39,7 @@ public class DashboardServiceImpl implements DashboardService {
                 .map(p -> {
                     Long contentId = p.getContent() != null ? p.getContent().getId() : null;
                     String title = p.getContent() != null ? p.getContent().getTitle() : "Untitled Resource";
-                    String type = (p.getContent() != null && p.getContent().getType() != null) ? p.getContent().getType().name() : "ARTICLE";
+                    String type = (p.getContent() != null && p.getContent().getType() != null) ? p.getContent().getType() : "ARTICLE";
                     String category = (p.getContent() != null && p.getContent().getCategory() != null) ? p.getContent().getCategory().getName() : "General";
                     String fileUrl = p.getContent() != null ? p.getContent().getFileUrl() : null;
 

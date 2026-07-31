@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.*;
 import java.util.List;
 import java.util.UUID;
@@ -64,7 +65,7 @@ public class CreatorContentServiceImpl implements CreatorContentService {
         content.setPreviewText(request.getPreviewText());
         content.setContentBody(request.getContentBody());
         content.setFileUrl(request.getFileUrl());
-        content.setPrice(request.getPrice() != null ? request.getPrice() : 0.00);
+        content.setPrice(BigDecimal.valueOf(request.getPrice() != null ? request.getPrice() : 0.00));
         content.setType(request.getType() != null ? request.getType() : "ARTICLE");
         content.setLevel(request.getLevel() != null ? request.getLevel() : "Beginner");
         content.setTags(request.getTags());
@@ -160,7 +161,7 @@ public class CreatorContentServiceImpl implements CreatorContentService {
             content.setFileUrl(request.getFileUrl());
         }
         if (request.getPrice() != null) {
-            content.setPrice(request.getPrice());
+            content.setPrice(BigDecimal.valueOf(request.getPrice()));
         }
         if (request.getType() != null) {
             content.setType(request.getType());

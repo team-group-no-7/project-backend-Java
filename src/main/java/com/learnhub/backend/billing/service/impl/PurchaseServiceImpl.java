@@ -45,7 +45,7 @@ public class PurchaseServiceImpl implements PurchaseService {
                     Long contentId = content != null ? content.getId() : null;
                     String title = content != null ? content.getTitle() : "Untitled Resource";
                     String category = (content != null && content.getCategory() != null) ? content.getCategory().getName() : "General";
-                    String type = (content != null && content.getType() != null) ? content.getType().name() : "ARTICLE";
+                    String type = (content != null && content.getType() != null) ? content.getType() : "ARTICLE";
                     var price = content != null ? content.getPrice() : java.math.BigDecimal.ZERO;
                     String fileUrl = content != null ? content.getFileUrl() : null;
 
