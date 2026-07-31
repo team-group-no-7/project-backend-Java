@@ -27,6 +27,8 @@ public class ContentServiceImpl implements ContentService {
     private CatalogResponse mapToCatalog(Content content) {
         String categoryName = content.getCategory() != null ? content.getCategory().getName() : "General";
         String creatorName = content.getCreator() != null ? content.getCreator().getName() : "LearnHub Creator";
+        String creatorAvatar = content.getCreator() != null ? content.getCreator().getAvatarUrl() : null;
+        Long creatorId = content.getCreator() != null ? content.getCreator().getId() : null;
         String typeName = content.getType() != null ? content.getType() : "ARTICLE";
 
         return new CatalogResponse(
@@ -37,7 +39,14 @@ public class ContentServiceImpl implements ContentService {
                 categoryName,
                 content.getPrice(),
                 content.getFileUrl(), // Using fileUrl as thumbnail fallback
-                creatorName
+                creatorName,
+                creatorAvatar,
+                creatorId,
+                content.isTrending(),
+                content.isFeatured(),
+                content.getRating() != null ? content.getRating().doubleValue() : null,
+                content.getReviewsCount(),
+                content.getLearnersCount()
         );
     }
 
