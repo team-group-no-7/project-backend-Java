@@ -14,19 +14,19 @@ public class Purchase {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "user_id")
-    private User user;
-
-    @Column(name = "user_id", insertable = false, updatable = false)
+    @Column(name = "user_id")
     private Long userId;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "content_id")
-    private Content content;
+    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    private User user;
 
-    @Column(name = "content_id", insertable = false, updatable = false)
+    @Column(name = "content_id")
     private Long contentId;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "content_id", insertable = false, updatable = false)
+    private Content content;
 
     @Column(name = "amount_paid", nullable = false, precision = 10, scale = 2)
     private BigDecimal amountPaid;

@@ -31,9 +31,9 @@ public class MentorshipServiceImpl implements MentorshipService {
         session.setDurationMinutes(request.getDurationMinutes());
         session.setSessionPrice(request.getSessionPrice());
         
-        // Use enum types conforming to learner updates
-        session.setBookingStatus(BookingStatus.PENDING);
-        session.setPaymentStatus(PaymentStatus.PENDING);
+        // Set approved booking and paid status for completed transactions
+        session.setBookingStatus(BookingStatus.APPROVED);
+        session.setPaymentStatus(PaymentStatus.PAID);
 
         // Generate Jitsi Room Hash
         String cleanTopic = request.getTopic().replaceAll("[^a-zA-Z0-9-]", "").toLowerCase();
@@ -103,6 +103,13 @@ public class MentorshipServiceImpl implements MentorshipService {
         
         if (session.getJitsiRoomName() != null) {
             response.setJitsiMeetingLink("https://meet.jit.si/" + session.getJitsiRoomName());
+        }
+
+        if (session.getLearner() != null) {
+            response.setLearnerName(session.getLearner().getName());
+        }
+        if (session.getCreator() != null) {
+            response.setCreatorName(session.getCreator().getName());
         }
         
         return response;

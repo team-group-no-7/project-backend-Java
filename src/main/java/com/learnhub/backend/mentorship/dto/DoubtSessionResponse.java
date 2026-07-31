@@ -40,6 +40,12 @@ public class DoubtSessionResponse {
     @JsonProperty("jitsi_meeting_link")
     private String jitsiMeetingLink;
 
+    @JsonProperty("creator_name")
+    private String creatorName;
+
+    @JsonProperty("learner_name")
+    private String learnerName;
+
     public DoubtSessionResponse() {
     }
 
@@ -137,5 +143,21 @@ public class DoubtSessionResponse {
 
     public void setJitsiMeetingLink(String jitsiMeetingLink) {
         this.jitsiMeetingLink = jitsiMeetingLink;
+    }
+
+    public String getCreatorName() {
+        return creatorName;
+    }
+
+    public void setCreatorName(String creatorName) {
+        this.creatorName = creatorName;
+    }
+
+    public String getLearnerName() {
+        return learnerName;
+    }
+
+    public void setLearnerName(String learnerName) {
+        this.learnerName = learnerName;
     }
 }

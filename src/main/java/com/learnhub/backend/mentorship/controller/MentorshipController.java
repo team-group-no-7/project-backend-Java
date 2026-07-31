@@ -32,9 +32,12 @@ public class MentorshipController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    /** GET /api/sessions/{learnerId} — Fetch all sessions for a learner */
-    @GetMapping("/{learnerId}")
-    public List<SessionResponse> sessions(@PathVariable Long learnerId) {
-        return service.getLearnerSessions(learnerId);
+    /** GET /api/sessions/{userId} — Fetch all sessions for a learner or creator */
+    @GetMapping("/{userId}")
+    public List<DoubtSessionResponse> sessions(@PathVariable Long userId, @RequestParam(value = "role", required = false) String role) {
+        if ("CREATOR".equalsIgnoreCase(role)) {
+            return service.getSessionsForCreator(userId);
+        }
+        return service.getSessionsForLearner(userId);
     }
 }

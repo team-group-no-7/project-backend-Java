@@ -15,19 +15,19 @@ public class DoubtSession {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "learner_id")
-    private User learner;
-
-    @Column(name = "learner_id", insertable = false, updatable = false)
+    @Column(name = "learner_id")
     private Long learnerId;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "creator_id")
-    private User creator;
+    @JoinColumn(name = "learner_id", insertable = false, updatable = false)
+    private User learner;
 
-    @Column(name = "creator_id", insertable = false, updatable = false)
+    @Column(name = "creator_id")
     private Long creatorId;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "creator_id", insertable = false, updatable = false)
+    private User creator;
 
     private String topic;
 

@@ -44,18 +44,19 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    @Transactional
     public AdminUserResponse toggleUserFreeze(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
         
         // Toggle ACTIVE <-> FROZEN
-        if ("ACTIVE".equalsIgnoreCase(user.getStatus())) {
-            user.setStatus("FROZEN");
-        } else {
+        if ("FROZEN".equalsIgnoreCase(user.getStatus()) || "SUSPENDED".equalsIgnoreCase(user.getStatus())) {
             user.setStatus("ACTIVE");
+        } else {
+            user.setStatus("FROZEN");
         }
         
-        User savedUser = userRepository.save(user);
+        User savedUser = userRepository.saveAndFlush(user);
         return mapToUserResponse(savedUser);
     }
 

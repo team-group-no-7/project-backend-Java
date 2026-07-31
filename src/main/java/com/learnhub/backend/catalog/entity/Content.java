@@ -55,19 +55,19 @@ public class Content {
     @Column(name = "approval_status")
     private String approvalStatus = "APPROVED"; // PENDING, APPROVED, FLAGGED
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "category_id")
-    private Category category;
-
-    @Column(name = "category_id", insertable = false, updatable = false)
+    @Column(name = "category_id")
     private Long categoryId;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "creator_id")
-    private User creator;
+    @JoinColumn(name = "category_id", insertable = false, updatable = false)
+    private Category category;
 
-    @Column(name = "creator_id", insertable = false, updatable = false)
+    @Column(name = "creator_id")
     private Long creatorId;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "creator_id", insertable = false, updatable = false)
+    private User creator;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
