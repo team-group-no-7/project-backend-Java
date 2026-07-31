@@ -12,7 +12,7 @@ import java.util.List;
  * Implemented in pure Java with explicit constructor injection (no Lombok).
  */
 @RestController
-@RequestMapping("/api/content")
+@RequestMapping("/api/contents")
 public class ContentController {
 
     private final ContentService contentService;
