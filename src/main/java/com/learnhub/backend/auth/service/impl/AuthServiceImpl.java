@@ -18,10 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-/**
+/*
  * AuthServiceImpl — Implementation class for Authentication service.
- * 
- * Implemented in pure Java with explicit constructor dependency injection (no Lombok).
  */
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -42,7 +40,7 @@ public class AuthServiceImpl implements AuthService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    /**
+    /*
      * REGISTER — Create a new user account.
      */
     @Override
@@ -81,7 +79,7 @@ public class AuthServiceImpl implements AuthService {
         );
     }
 
-    /**
+    /*
      * LOGIN — Verify credentials and issue tokens.
      */
     @Override
@@ -114,7 +112,7 @@ public class AuthServiceImpl implements AuthService {
         );
     }
 
-    /**
+    /*
      * REFRESH TOKEN — Issue a new JWT using a valid refresh token.
      */
     @Override
@@ -153,7 +151,7 @@ public class AuthServiceImpl implements AuthService {
         );
     }
 
-    /**
+    /*
      * LOGOUT — Revoke the refresh token.
      */
     @Override
@@ -166,7 +164,7 @@ public class AuthServiceImpl implements AuthService {
         refreshTokenRepository.save(refreshToken);
     }
 
-    /**
+    /*
      * HELPER — Create and save a new refresh token for a user.
      */
     private RefreshToken createRefreshToken(Long userId) {

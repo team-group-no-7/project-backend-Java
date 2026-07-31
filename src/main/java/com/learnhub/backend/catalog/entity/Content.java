@@ -39,10 +39,13 @@ public class Content {
     private String level;
     private String tags;
 
+    @Column(name = "status")
+    private String status = "PUBLISHED"; // DRAFT or PUBLISHED
+
     private Boolean featured = false;
 
     @Column(name = "is_trending")
-    private Boolean trending = false;
+    private Boolean isTrending = false;
 
     @Column(precision = 3, scale = 2)
     private BigDecimal rating = BigDecimal.ZERO;
@@ -76,7 +79,7 @@ public class Content {
     public Content() {
     }
 
-    public Content(Long id, String title, String description, String previewText, String contentBody, String fileUrl, BigDecimal price, ContentType type, String level, String tags, Boolean featured, Boolean trending, BigDecimal rating, Integer reviewsCount, Integer learnersCount, String approvalStatus, Category category, User creator, LocalDateTime createdAt) {
+    public Content(Long id, String title, String description, String previewText, String contentBody, String fileUrl, BigDecimal price, ContentType type, String level, String tags, String status, Boolean featured, Boolean isTrending, BigDecimal rating, Integer reviewsCount, Integer learnersCount, String approvalStatus, Category category, User creator, LocalDateTime createdAt) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -87,8 +90,9 @@ public class Content {
         this.type = type;
         this.level = level;
         this.tags = tags;
+        this.status = status;
         this.featured = featured;
-        this.trending = trending;
+        this.isTrending = isTrending;
         this.rating = rating;
         this.reviewsCount = reviewsCount;
         this.learnersCount = learnersCount;
@@ -134,11 +138,14 @@ public class Content {
     public String getTags() { return tags; }
     public void setTags(String tags) { this.tags = tags; }
 
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
     public Boolean getFeatured() { return featured; }
     public void setFeatured(Boolean featured) { this.featured = featured; }
 
-    public Boolean getTrending() { return trending; }
-    public void setTrending(Boolean trending) { this.trending = trending; }
+    public Boolean getIsTrending() { return isTrending; }
+    public void setIsTrending(Boolean isTrending) { this.isTrending = isTrending; }
 
     public BigDecimal getRating() { return rating; }
     public void setRating(BigDecimal rating) { this.rating = rating; }

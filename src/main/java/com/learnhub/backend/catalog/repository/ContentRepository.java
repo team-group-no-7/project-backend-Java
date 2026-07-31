@@ -14,6 +14,17 @@ public interface ContentRepository extends JpaRepository<Content, Long> {
     // Filter by Creator ID (used in Creator Dashboard Management Grid)
     List<Content> findByCreatorId(Long creatorId);
 
+    // Count total resources created by a specific creator
+    long countByCreatorId(Long creatorId);
+
+    // Calculate total learners enrolled across all resources created by this creator
+    @Query("SELECT COALESCE(SUM(c.learnersCount), 0) FROM Content c WHERE c.creatorId = :creatorId")
+    long sumLearnersCountByCreatorId(@Param("creatorId") Long creatorId);
+
+    // Calculate total revenue earned by creator
+    @Query("SELECT COALESCE(SUM(c.price * c.learnersCount), 0.0) FROM Content c WHERE c.creatorId = :creatorId")
+    Double calculateTotalEarningsByCreatorId(@Param("creatorId") Long creatorId);
+
     // Dynamic search and filter query
     @Query("SELECT c FROM Content c WHERE " +
            "(cast(:search as string) IS NULL OR LOWER(c.title) LIKE LOWER(CONCAT('%', cast(:search as string), '%'))) AND " +

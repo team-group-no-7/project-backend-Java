@@ -3,10 +3,8 @@ package com.learnhub.backend.auth.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
-/**
+/*
  * LoginRequest — Carries login form data from frontend to backend.
- * 
- * Implemented in pure Java with explicit getters, setters, and constructors.
  */
 public class LoginRequest {
 

@@ -11,10 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-/**
+/*
  * AuthController — REST Controller for Authentication Module.
- * 
- * Implemented in pure Java with explicit constructor dependency injection (no Lombok).
  */
 @RestController
 @RequestMapping("/api/auth")
@@ -27,7 +25,7 @@ public class AuthController {
         this.authService = authService;
     }
 
-    /**
+    /*
      * GET /api/auth/status
      */
     @GetMapping("/status")
@@ -35,7 +33,7 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success("Authentication Module is Active", "OK"));
     }
 
-    /**
+    /*
      * POST /api/auth/register
      */
     @PostMapping("/register")
@@ -45,7 +43,7 @@ public class AuthController {
                 .body(ApiResponse.success("User registered successfully", authResponse));
     }
 
-    /**
+    /*
      * POST /api/auth/login
      */
     @PostMapping("/login")
@@ -54,7 +52,7 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success("Login successful", authResponse));
     }
 
-    /**
+    /*
      * POST /api/auth/refresh
      */
     @PostMapping("/refresh")
@@ -63,7 +61,7 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success("Token refreshed successfully", authResponse));
     }
 
-    /**
+    /*
      * POST /api/auth/logout
      */
     @PostMapping("/logout")

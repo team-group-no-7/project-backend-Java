@@ -1,17 +1,7 @@
 package com.learnhub.backend.common.dto;
 
-/**
+/*
  * ApiResponse — Standardized JSON response wrapper used by ALL controllers.
- * 
- * Implemented in pure Java without Lombok annotations.
- * Uses explicit getters, setters, constructors, and static factory methods.
- *
- * Every API endpoint returns this JSON structure:
- * {
- *   "success": true/false,
- *   "message": "Human-readable message",
- *   "data": { ... payload ... }
- * }
  */
 public class ApiResponse<T> {
 
