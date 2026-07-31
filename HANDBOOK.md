@@ -1,6 +1,6 @@
-# 🎓 LearnHub — Beginners Handbook & Complete System Workflows
+# 📘 LearnHub — Complete User Handbook & Step-by-Step Testing Guide
 
-Welcome to the **LearnHub System Handbook**. This guide provides an end-to-end blueprint of the LearnHub platform, detailing full user workflows, architectural data flows, API mappings, and role-based permissions across both the **React Frontend** and **Spring Boot Java Backend**.
+Welcome to the **LearnHub System Handbook & Testing Guide**. This guide provides an end-to-end blueprint of the LearnHub platform, including architectural data flows, API mappings, role-based workflows, and step-by-step feature testing instructions for both the **React Frontend** and **Spring Boot Java Backend**.
 
 ---
 
@@ -53,95 +53,199 @@ graph LR
 
 ---
 
-## 🔄 End-to-End Core Workflows
+## 📋 Prerequisites & Startup Checklist
 
-### Workflow 1: Authentication & Role Switch
+Before starting, ensure both the backend and frontend servers are running:
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor User
-    participant FE as React Frontend
-    participant Auth as AuthController
-    participant DB as PostgreSQL DB
+### 1. Database & Backend Server
+1. Open PowerShell and navigate to the backend folder:
+   ```powershell
+   cd C:\Users\shubh\Desktop\Projects\project-backend-Java
+   ```
+2. Start the Spring Boot application:
+   ```powershell
+   .\mvnw spring-boot:run
+   ```
+3. Wait until you see: `Started BackendApplication in X.XXX seconds`.
 
-    User->>FE: Enter Email & Password
-    FE->>Auth: POST /api/auth/login
-    Auth->>DB: Verify User Credentials & Freeze Status
-    alt Account Frozen
-        Auth-->>FE: HTTP 403 (Account is frozen by Admin)
-        FE-->>User: Show Error Banner
-    else Success
-        Auth-->>FE: Return JWT Token & User Profile (Role: LEARNER/CREATOR/ADMIN)
-        FE->>FE: Store Token in localStorage
-        FE-->>User: Redirect to Role Dashboard
-    end
-```
-
----
-
-### Workflow 2: Content Purchasing & Dynamic Revenue Calculation
-
-1. **Browse**: Learner selects a paid resource on the Marketplace (`GET /api/public/contents`).
-2. **Checkout**: Learner clicks **Buy Now** -> Navigates to `CheckoutPage.jsx`.
-3. **Purchase API**: Frontend calls `POST /api/purchases/buy` with `userId` & `contentId`.
-4. **Database Mutation**:
-   - Inserts record into PostgreSQL `purchases` table.
-   - Increments `learners_count` on `contents` table.
-   - Calculates total revenue on Creator side (`SUM(price * learners_count)`).
-5. **Access Granted**: Resource appears immediately in **My Library** (`GET /api/user/library`).
+### 2. Frontend Development Server
+1. Open a new PowerShell terminal and navigate to the frontend folder:
+   ```powershell
+   cd C:\Users\shubh\Desktop\Projects\CDAC-Final-Project\project-frontend-react
+   ```
+2. Start the Vite server:
+   ```powershell
+   npm run dev
+   ```
+3. Open your browser and navigate to **`http://localhost:5173`**.
 
 ---
 
-### Workflow 3: Mentorship Session Booking & Jitsi Video Call
+## 🔑 Demo Credentials Matrix
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Learner
-    actor Creator
-    participant FE as React Frontend
-    participant Session as MentorshipController
-    participant DB as PostgreSQL DB
+Use these pre-configured demo accounts for testing each role:
 
-    Learner->>FE: View Creator Profile -> Book Doubt Session
-    FE->>Session: POST /api/mentorship/book
-    Note over FE,Session: Payload: { learnerId, creatorId, date, timeSlot }
-    Session->>DB: Insert DoubtSession (booking_status = SCHEDULED)
-    Session-->>FE: Return Session Details with Jitsi Room Link
-
-    Note over Learner,Creator: Both Learner & Creator see session in Doubt Sessions tab
-    Learner->>FE: Click "Join Call"
-    FE->>FE: Open JitsiCallPage (Embedded 8x8 / Jitsi Meet SDK)
-```
+| Role | Email | Password | Primary Features to Test |
+|---|---|---|---|
+| **Learner** | `arjun.mehta@learnhub.com` | `password123` | Library, Content Reader, Doubt Booking, Reviews, Q&A |
+| **Creator** | `hero@learnhub.com` | `password123` | Content Studio Upload, Management Grid, Revenue, Q&A Replies |
+| **Admin** | `admin@learnhub.com` | `admin123` | User Management, Freeze/Unfreeze Users, Platform Stats |
 
 ---
 
-### Workflow 4: In-Reader Doubts & Q&A Discussion Forum
-
-1. **Learner Question**:
-   - Opens document in `UnifiedContentViewerPage.jsx`.
-   - Opens **Doubts & Q&A** side drawer.
-   - Submits technical question (`POST /api/qa/question`).
-2. **Creator Response**:
-   - Creator opens **Management Grid** in Creator Mode.
-   - Clicks **💬 Q&A** button next to their uploaded content.
-   - Replies to student doubt (`POST /api/qa/thread/{id}/reply`).
-3. **Resolution**:
-   - Reply is saved with `role = "CREATOR"`.
-   - Displays a **Verified Answer** badge and marks thread as **Resolved** (`isResolved = true`).
+## 🧪 Step-by-Step Feature Testing Workflows
 
 ---
 
-### Workflow 5: Interactive Star Rating & Review System
+### Test Suite 1: Authentication & Role Navigation
 
-1. **Submission**: Learner clicks **⭐ Rate Resource** inside Content Reader (`ReviewModal.jsx`).
-2. **API Request**: Calls `POST /api/contents/{contentId}/reviews` with rating (1–5 stars) & review text.
-3. **Backend Processing**:
-   - Inserts record in `reviews` table.
-   - Recalculates average rating and review count.
-   - Updates `rating` & `reviews_count` on `contents` table in PostgreSQL.
-4. **Marketplace Update**: Card reflects updated star rating dynamically.
+#### Test 1.1: User Registration
+1. Go to `http://localhost:5173` and click **Get Started** or **Register**.
+2. Fill in:
+   - **Name**: `Test Learner`
+   - **Email**: `testlearner@learnhub.com`
+   - **Password**: `password123`
+   - **Role**: Select `LEARNER`.
+3. Click **Create Account**.
+4. **Expected Result**: Successfully registers, receives JWT token, and redirects to the Learner Dashboard.
+
+#### Test 1.2: User Login & Logout
+1. Click the top-right profile avatar -> Click **Logout**.
+2. Click **Login**.
+3. Enter `arjun.mehta@learnhub.com` and `password123`.
+4. Click **Sign In**.
+5. **Expected Result**: Logged in successfully; profile name displays "Arjun Mehta".
+
+#### Test 1.3: Role Switcher Safeguards
+1. Log in as `admin@learnhub.com`.
+2. Click top-right avatar dropdown.
+3. **Expected Result**: The **Switch Role** toggle is hidden for Admin role (Admins cannot switch roles).
+4. Log out and log in as `hero@learnhub.com` (Creator).
+5. Open avatar dropdown -> Click **Switch Role**.
+6. **Expected Result**: Seamlessly switches UI mode between Creator and Learner mode.
+
+---
+
+### Test Suite 2: Marketplace & Resource Details
+
+#### Test 2.1: Browse & Search Resources
+1. Click **Marketplace** on the top navigation bar.
+2. Type `Spring Boot` into the search input.
+3. **Expected Result**: The resource grid dynamically filters to show matching Spring Boot items.
+4. Select category dropdown -> Choose **Web Development**.
+5. **Expected Result**: Grid filters to display Web Development content only.
+
+#### Test 2.2: View Resource Details & Creator Profile
+1. On the Marketplace, click any resource card (e.g. *Complete Java Spring Boot Guide*).
+2. **Expected Result**: Opens `ResourceDetailPage.jsx` displaying description, table of contents preview, price, and creator bio.
+3. Click the Creator name link (**Rohan Verma**).
+4. **Expected Result**: Opens `CreatorProfilePage.jsx` showing all resources uploaded by Rohan Verma, total students count, and doubt session booking slots.
+
+---
+
+### Test Suite 3: Checkout & Purchasing Flow
+
+#### Test 3.1: Purchase Paid Resource
+1. On the Marketplace, click **Buy Now** on a paid PDF/Article.
+2. **Expected Result**: Redirects to `CheckoutPage.jsx` with item summary and total price.
+3. Click **Confirm & Pay**.
+4. **Expected Result**: 
+   - Payment processes cleanly.
+   - Redirects to `PaymentResultPage.jsx` displaying transaction status.
+   - Item immediately appears in **My Library** (`GET /api/user/library`).
+
+---
+
+### Test Suite 4: Unified Content Reader Experience
+
+#### Test 4.1: Reading PDFs & Articles
+1. Go to **My Library** on the Learner Dashboard.
+2. Click **Read Content** on any purchased item.
+3. **Expected Result**: Opens `UnifiedContentViewerPage.jsx` with full document viewer, Table of Contents sidebar, page navigation buttons, and reading progress bar.
+4. Click page navigation arrows (`Next Page` / `Previous Page`).
+5. **Expected Result**: Page number updates and progress bar recalculates percent read.
+
+#### Test 4.2: In-Reader Doubts & Q&A Discussion
+1. Inside the Content Reader, click the **Doubts & Q&A** button in the header.
+2. **Expected Result**: Side drawer slides open displaying community Q&A threads.
+3. Type a doubt in the input: `"How do we handle circular dependencies?"` -> Click **Post Question**.
+4. **Expected Result**: Question instantly posts to thread and persists in backend PostgreSQL table `qa_threads`.
+
+#### Test 4.3: Submit Star Rating & Review
+1. Inside the Content Reader, click the **⭐ Rate Resource** button in the header bar.
+2. **Expected Result**: `ReviewModal.jsx` pops up with interactive hover stars.
+3. Click **5 Stars** -> Type review text: `"Excellent explanation of Spring Boot topics!"`.
+4. Click **Submit Review**.
+5. **Expected Result**: Displays green checkmark confirmation (`Thank You for Your Feedback!`). Rating is updated in backend table `reviews` and average rating updates on Marketplace.
+
+---
+
+### Test Suite 5: Creator Content Studio & Management Grid
+
+#### Test 5.1: Upload New Resource (Content Studio)
+1. Switch to Creator Mode or log in as `hero@learnhub.com`.
+2. Click **Content Studio** (or **Upload New Resource**).
+3. Choose resource type (**PDF** or **Article**).
+4. Fill in:
+   - **Title**: `Advanced Microservices with Spring Cloud`
+   - **Category**: `Cloud & DevOps`
+   - **Price**: `₹499`
+   - **Description**: `Complete microservices handbook.`
+5. Complete step wizard -> Click **Publish Content**.
+6. **Expected Result**: Resource publishes successfully and redirects to Creator Management Grid.
+
+#### Test 5.2: Manage Resources (Edit / Publish Toggle / Delete)
+1. Navigate to **Management Grid** in Creator Dashboard.
+2. Find your uploaded resource row.
+3. Click the **Eye Icon** (Publish/Unpublish toggle).
+4. **Expected Result**: Status badge toggles between `PUBLISHED` and `DRAFT`.
+5. Click **Edit Details (✏️)** -> Update title -> Click Save.
+6. **Expected Result**: Table updates title in PostgreSQL immediately.
+
+#### Test 5.3: Creator Responding to Learner Doubts
+1. In the **Management Grid**, click the **💬 Q&A** button next to your uploaded resource.
+2. **Expected Result**: Opens reader with the Q&A drawer active.
+3. Type a response to student question -> Click **Send Reply**.
+4. **Expected Result**: Reply is posted with `role = "CREATOR"`, marked with a **Verified Answer** badge, and thread status updates to **Resolved**.
+
+---
+
+### Test Suite 6: 1-on-1 Mentorship Booking & Jitsi Video Call
+
+#### Test 6.1: Book Doubt Session as Learner
+1. Log in as Learner (`arjun.mehta@learnhub.com`).
+2. Go to **Marketplace** -> Click on Creator **Rohan Verma** profile.
+3. Under **Book 1-on-1 Doubt Session**, select Date and Time Slot -> Click **Book Session**.
+4. **Expected Result**: Confirmation toast appears; session is recorded in database table `doubt_sessions`.
+
+#### Test 6.2: Verify Session & Join Jitsi Video Call
+1. Click **Profile / Dashboard** -> View **Doubt Sessions** tab.
+2. **Expected Result**: The booked doubt session is visible with date, time, and status `SCHEDULED`.
+3. Switch role to Creator (`hero@learnhub.com`) -> Open Creator Dashboard -> Check **Doubt Sessions** tab.
+4. **Expected Result**: Creator sees the exact same booked session by Arjun Mehta in sync with DB.
+5. Click **Join Call**.
+6. **Expected Result**: Opens `JitsiCallPage.jsx` launching the embedded video meeting interface.
+
+---
+
+### Test Suite 7: Admin User Management & Freeze Enforcement
+
+#### Test 7.1: Freeze User Account
+1. Log in as Admin (`admin@learnhub.com`).
+2. Navigate to **Admin Dashboard** -> Click **Users List**.
+3. Find user **Arjun Mehta** -> Click **Freeze Account** button.
+4. **Expected Result**: Arjun Mehta's status updates to `FROZEN` in PostgreSQL table `users`.
+
+#### Test 7.2: Verify Frozen User Login Block
+1. Logout from Admin.
+2. Try logging in as `arjun.mehta@learnhub.com` / `password123`.
+3. **Expected Result**: Login is blocked with message: *"Account is frozen. Please contact administrator."*
+
+#### Test 7.3: Unfreeze User Account
+1. Log in back as Admin (`admin@learnhub.com`).
+2. Click **Unfreeze Account** next to Arjun Mehta.
+3. Logout and login as `arjun.mehta@learnhub.com`.
+4. **Expected Result**: Account logs in successfully.
 
 ---
 
@@ -164,29 +268,3 @@ sequenceDiagram
 | **Post Reply** | `POST` | `/api/qa/thread/{id}/reply` | Authenticated |
 | **Submit Review** | `POST` | `/api/contents/{contentId}/reviews` | Authenticated |
 | **Toggle User Freeze** | `PUT` | `/api/admin/users/{id}/freeze` | Admin |
-
----
-
-## 🚀 How to Run the Complete Stack
-
-### 1. Backend Setup (`project-backend-Java`)
-```powershell
-# Ensure PostgreSQL database 'learnhub_db' exists on localhost:5432
-cd C:\Users\shubh\Desktop\Projects\project-backend-Java
-
-# Compile and start Spring Boot Application
-.\mvnw spring-boot:run
-```
-*Backend runs on **`http://localhost:8080`***
-
-### 2. Frontend Setup (`project-frontend-react`)
-```powershell
-cd C:\Users\shubh\Desktop\Projects\CDAC-Final-Project\project-frontend-react
-
-# Install dependencies (if needed)
-npm install
-
-# Start Vite Development Server
-npm run dev
-```
-*Frontend runs on **`http://localhost:5173`***
