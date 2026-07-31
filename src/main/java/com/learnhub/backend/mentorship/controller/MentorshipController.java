@@ -1,19 +1,43 @@
 package com.learnhub.backend.mentorship.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.learnhub.backend.mentorship.dto.DoubtSessionRequest;
+import com.learnhub.backend.mentorship.dto.DoubtSessionResponse;
+import com.learnhub.backend.mentorship.dto.response.SessionResponse;
+import com.learnhub.backend.mentorship.service.MentorshipService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
- * MentorshipController — Placeholder endpoint for live mentorship booking.
- * Dedicated package area for Team Member working on Mentorship & Jitsi configuration.
+ * MentorshipController — REST Controller for Learner Mentorship & Doubt Sessions.
+ * Implemented in pure Java with explicit constructor injection (no Lombok).
  */
 @RestController
-@RequestMapping("/api/mentorship")
+@RequestMapping("/api/sessions")
 public class MentorshipController {
 
-    @GetMapping("/status")
-    public String getStatus() {
-        return "Mentorship & Live Booking Module is Active";
+    private final MentorshipService service;
+
+    // Explicit Constructor Injection
+    public MentorshipController(MentorshipService service) {
+        this.service = service;
     }
-}
+
+    /** POST /api/sessions — Book a new mentorship doubt session */
+    @PostMapping
+    public ResponseEntity<DoubtSessionResponse> bookSession(@RequestBody DoubtSessionRequest request) {
+        DoubtSessionResponse response = service.bookSession(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    /** GET /api/sessions/{userId} — Fetch all sessions for a learner or creator */
+    @GetMapping("/{userId}")
+    public List<DoubtSessionResponse> sessions(@PathVariable Long userId, @RequestParam(value = "role", required = false) String role) {
+        if ("CREATOR".equalsIgnoreCase(role)) {
+            return service.getSessionsForCreator(userId);
+        }
+        return service.getSessionsForLearner(userId);
+    }
+}

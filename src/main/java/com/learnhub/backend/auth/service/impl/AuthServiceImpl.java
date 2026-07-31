@@ -18,10 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-/**
+/*
  * AuthServiceImpl — Implementation class for Authentication service.
- * 
- * Implemented in pure Java with explicit constructor dependency injection (no Lombok).
  */
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -42,7 +40,7 @@ public class AuthServiceImpl implements AuthService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    /**
+    /*
      * REGISTER — Create a new user account.
      */
     @Override
@@ -81,7 +79,7 @@ public class AuthServiceImpl implements AuthService {
         );
     }
 
-    /**
+    /*
      * LOGIN — Verify credentials and issue tokens.
      */
     @Override
@@ -95,6 +93,11 @@ public class AuthServiceImpl implements AuthService {
         // Step 2: Compare plain password with stored BCrypt hash
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new BadRequestException("Invalid email or password");
+        }
+
+        // Step 2b: Check if user account is frozen
+        if ("FROZEN".equalsIgnoreCase(user.getStatus()) || "SUSPENDED".equalsIgnoreCase(user.getStatus())) {
+            throw new BadRequestException("Your account has been frozen by an administrator. Please contact support.");
         }
 
         // Step 3: Generate JWT token
@@ -114,7 +117,7 @@ public class AuthServiceImpl implements AuthService {
         );
     }
 
-    /**
+    /*
      * REFRESH TOKEN — Issue a new JWT using a valid refresh token.
      */
     @Override
@@ -153,7 +156,7 @@ public class AuthServiceImpl implements AuthService {
         );
     }
 
-    /**
+    /*
      * LOGOUT — Revoke the refresh token.
      */
     @Override
@@ -166,7 +169,7 @@ public class AuthServiceImpl implements AuthService {
         refreshTokenRepository.save(refreshToken);
     }
 
-    /**
+    /*
      * HELPER — Create and save a new refresh token for a user.
      */
     private RefreshToken createRefreshToken(Long userId) {

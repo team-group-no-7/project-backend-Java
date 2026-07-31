@@ -3,12 +3,6 @@ package com.learnhub.backend.user.entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-/**
- * User Entity — Maps to the USERS table in the database.
- * 
- * Implemented in pure Java without Lombok annotations.
- * Provides explicit getters, setters, constructors, and toString().
- */
 @Entity
 @Table(name = "users")
 public class User {
@@ -27,7 +21,10 @@ public class User {
     private String password;
 
     @Column(nullable = false)
-    private String role;
+    private String role; // LEARNER, CREATOR, ADMIN
+
+    @Column(nullable = true)
+    private String status = "ACTIVE"; // ACTIVE, FROZEN
 
     @Column(name = "avatar_url")
     private String avatarUrl;
@@ -39,17 +36,16 @@ public class User {
     @Column(name = "joined_at", insertable = false, updatable = false)
     private LocalDateTime joinedAt;
 
-    // Default Constructor (Required by JPA/Hibernate)
-    public User() {
-    }
+    public User() {}
 
     // Constructor with all fields
-    public User(Long id, String name, String email, String password, String role, String avatarUrl, String headline, String location, LocalDateTime joinedAt) {
+    public User(Long id, String name, String email, String password, String role, String status, String avatarUrl, String headline, String location, LocalDateTime joinedAt) {
         this.id = id;
         this.name = name;
         this.email = email;
         this.password = password;
         this.role = role;
+        this.status = status;
         this.avatarUrl = avatarUrl;
         this.headline = headline;
         this.location = location;
@@ -62,80 +58,39 @@ public class User {
         this.email = email;
         this.password = password;
         this.role = role;
+        this.status = "ACTIVE";
     }
 
     // Getters and Setters
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    public String getName() {
-        return name;
-    }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
 
-    public String getEmail() {
-        return email;
-    }
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 
-    public String getPassword() {
-        return password;
-    }
+    public String getAvatarUrl() { return avatarUrl; }
+    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+    public String getHeadline() { return headline; }
+    public void setHeadline(String headline) { this.headline = headline; }
 
-    public String getRole() {
-        return role;
-    }
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
 
-    public void setRole(String role) {
-        this.role = role;
-    }
-
-    public String getAvatarUrl() {
-        return avatarUrl;
-    }
-
-    public void setAvatarUrl(String avatarUrl) {
-        this.avatarUrl = avatarUrl;
-    }
-
-    public String getHeadline() {
-        return headline;
-    }
-
-    public void setHeadline(String headline) {
-        this.headline = headline;
-    }
-
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
-        this.location = location;
-    }
-
-    public LocalDateTime getJoinedAt() {
-        return joinedAt;
-    }
-
-    public void setJoinedAt(LocalDateTime joinedAt) {
-        this.joinedAt = joinedAt;
-    }
+    public LocalDateTime getJoinedAt() { return joinedAt; }
+    public void setJoinedAt(LocalDateTime joinedAt) { this.joinedAt = joinedAt; }
 
     @Override
     public String toString() {
@@ -144,7 +99,7 @@ public class User {
                 ", name='" + name + '\'' +
                 ", email='" + email + '\'' +
                 ", role='" + role + '\'' +
-                ", joinedAt=" + joinedAt +
+                ", status='" + status + '\'' +
                 '}';
     }
 }

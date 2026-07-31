@@ -2,10 +2,8 @@ package com.learnhub.backend.auth.dto;
 
 import jakarta.validation.constraints.NotBlank;
 
-/**
+/*
  * RefreshTokenRequest — Carries refresh token string for refresh and logout endpoints.
- * 
- * Implemented in pure Java with explicit getters, setters, and constructors.
  */
 public class RefreshTokenRequest {
 

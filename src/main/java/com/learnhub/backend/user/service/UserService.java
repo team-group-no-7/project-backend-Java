@@ -1,36 +1,44 @@
 package com.learnhub.backend.user.service;
 
+import com.learnhub.backend.user.dto.UpdateProfileRequest;
+import com.learnhub.backend.user.dto.UserProfileResponse;
 import com.learnhub.backend.user.entity.User;
-import com.learnhub.backend.user.repository.UserRepository;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
-/**
- * UserService — Business logic for User Profile Management.
- *
- * Implemented in pure Java with explicit constructor dependency injection (no Lombok).
+/*
+ * UserService — Business logic interface for User Profile Management.
  */
-@Service
-public class UserService {
+public interface UserService {
 
-    private final UserRepository userRepository;
+    /*
+     * Get all users in the system.
+     */
+    List<User> getAllUsers();
 
-    // Explicit constructor for dependency injection
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+    /*
+     * Get user by ID.
+     */
+    Optional<User> getUserById(Long id);
 
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
-    }
+    /*
+     * Get user by email.
+     */
+    Optional<User> getUserByEmail(String email);
 
-    public Optional<User> getUserById(Long id) {
-        return userRepository.findById(id);
-    }
+    /*
+     * Fetch user profile by ID.
+     */
+    UserProfileResponse getUserProfile(Long userId);
 
-    public Optional<User> getUserByEmail(String email) {
-        return userRepository.findByEmail(email);
-    }
+    /*
+     * Update user profile information.
+     */
+    UserProfileResponse updateUserProfile(Long userId, UpdateProfileRequest request);
+
+    /*
+     * Upgrade a user to CREATOR role while retaining existing roles (e.g. "LEARNER,CREATOR").
+     */
+    UserProfileResponse becomeCreator(Long userId);
 }

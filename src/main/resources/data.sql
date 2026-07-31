@@ -4,9 +4,9 @@
 -- 1. Insert Seed Users
 -- Passwords set to plain text for local mock testing or dev auth
 INSERT INTO users (id, name, email, password, role, avatar_url, headline, location) VALUES
-(101, 'Arjun Mehta', 'arjun.mehta@learnhub.com', 'pass123', 'LEARNER', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150', 'Fullstack Architect', 'Mumbai, India'),
-(202, 'Rohan Verma', 'rohan.verma@learnhub.com', 'pass123', 'CREATOR', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150', 'Staff Backend Engineer', 'Bengaluru, India'),
-(303, 'System Administrator', 'admin@learnhub.com', 'admin123', 'ADMIN', 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150', 'System Admin', 'Delhi, India')
+(101, 'Arjun Mehta', 'arjun.mehta@learnhub.com', '$2a$10$qMAgUqtms0oB8c2.WWZbD.gtn8rGrhVVmtbUvUK0T9FtJxmZPthgu', 'LEARNER', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150', 'Fullstack Architect', 'Mumbai, India'),
+(202, 'Rohan Verma', 'rohan.verma@learnhub.com', '$2a$10$qMAgUqtms0oB8c2.WWZbD.gtn8rGrhVVmtbUvUK0T9FtJxmZPthgu', 'CREATOR', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150', 'Staff Backend Engineer', 'Bengaluru, India'),
+(303, 'System Administrator', 'admin@learnhub.com', '$2a$10$pi1.Dii5CpjFqFpE8.nYsOIxz2/9329jDlMqV8rmlJK7vLwFCc3.q', 'ADMIN', 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150', 'System Admin', 'Delhi, India')
 ON CONFLICT (id) DO NOTHING;
 
 -- 2. Insert Seed Categories

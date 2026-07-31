@@ -12,8 +12,6 @@ import org.springframework.web.cors.CorsConfigurationSource;
 
 /**
  * SecurityConfig — Main Spring Security configuration for LearnHub.
- * 
- * Implemented using explicit Java constructor dependency injection (no Lombok).
  */
 @Configuration
 @EnableWebSecurity
@@ -39,6 +37,9 @@ public class SecurityConfig {
             // Step 2: Disable CSRF — not needed for stateless JWT APIs
             .csrf(csrf -> csrf.disable())
 
+            // Step 2b: Allow frame options for PDF viewer iframe
+            .headers(headers -> headers.frameOptions(frame -> frame.disable()))
+
             // Step 3: Set session management to STATELESS
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -50,15 +51,30 @@ public class SecurityConfig {
                 // PUBLIC ENDPOINTS — No JWT token required
                 .requestMatchers("/api/auth/**").permitAll()
 
+
                 // Status check endpoints
                 .requestMatchers("/api/users/status").permitAll()
+                .requestMatchers("/api/creators/status").permitAll()
+                .requestMatchers("/api/creator/content/status").permitAll()
                 .requestMatchers("/api/catalog/status").permitAll()
                 .requestMatchers("/api/billing/status").permitAll()
                 .requestMatchers("/api/mentorship/status").permitAll()
                 .requestMatchers("/api/discussion/status").permitAll()
 
-                // Public content endpoints
+                // Public content, payment, purchases, sessions, admin and file endpoints
                 .requestMatchers("/api/public/**").permitAll()
+                .requestMatchers("/api/payment/**").permitAll()
+                .requestMatchers("/api/billing/**").permitAll()
+                .requestMatchers("/api/contents/**").permitAll()
+                .requestMatchers("/api/contents").permitAll()
+                .requestMatchers("/api/categories").permitAll()
+                .requestMatchers("/api/creators/**").permitAll()
+                .requestMatchers("/api/purchases/**").permitAll()
+                .requestMatchers("/api/sessions/**").permitAll()
+                .requestMatchers("/api/creator/content/**").permitAll()
+                .requestMatchers("/api/admin/**").permitAll()
+                .requestMatchers("/api/qa/**").permitAll()
+                .requestMatchers("/uploads/**").permitAll()
 
                 // PROTECTED ENDPOINTS — JWT token required for everything else
                 .anyRequest().authenticated()

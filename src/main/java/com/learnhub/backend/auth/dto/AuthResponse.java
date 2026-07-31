@@ -1,9 +1,7 @@
 package com.learnhub.backend.auth.dto;
 
-/**
+/*
  * AuthResponse — The response object sent back to frontend after login or registration.
- * 
- * Implemented in pure Java with explicit getters, setters, and constructors.
  */
 public class AuthResponse {
 
