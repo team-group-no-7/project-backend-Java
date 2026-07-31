@@ -100,7 +100,10 @@ public class RazorpayServiceImpl implements RazorpayService {
                     // Create new purchase record if not pre-registered
                     Purchase newP = new Purchase();
                     newP.setUserId(request.getUserId() != null ? request.getUserId() : 101L);
-                    newP.setContentId(request.getContentId() != null ? request.getContentId() : 10L);
+                    // Load and attach Content entity so JOIN FETCH works in library queries
+                    Long cId = request.getContentId() != null ? request.getContentId() : 10L;
+                    contentRepository.findById(cId).ifPresent(newP::setContent);
+                    newP.setContentId(cId);
                     newP.setAmountPaid(BigDecimal.valueOf(499.00));
                     newP.setTransactionId(orderId);
                     return newP;

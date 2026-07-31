@@ -28,6 +28,6 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long> {
     @Query("SELECT p FROM Purchase p JOIN FETCH p.content c JOIN FETCH c.category WHERE p.userId = :userId ORDER BY p.purchasedAt DESC")
     List<Purchase> dashboardContents(@Param("userId") Long userId);
 
-    @Query("SELECT p FROM Purchase p JOIN FETCH p.content c JOIN FETCH c.category WHERE p.userId = :userId ORDER BY p.purchasedAt DESC")
+    @Query("SELECT p FROM Purchase p LEFT JOIN FETCH p.content c LEFT JOIN FETCH c.category WHERE p.userId = :userId AND p.paymentStatus = 'SUCCESS' ORDER BY p.purchasedAt DESC")
     List<Purchase> findLibraryByUserId(@Param("userId") Long userId);
 }
