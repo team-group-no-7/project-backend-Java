@@ -95,6 +95,11 @@ public class AuthServiceImpl implements AuthService {
             throw new BadRequestException("Invalid email or password");
         }
 
+        // Step 2b: Check if user account is frozen
+        if ("FROZEN".equalsIgnoreCase(user.getStatus()) || "SUSPENDED".equalsIgnoreCase(user.getStatus())) {
+            throw new BadRequestException("Your account has been frozen by an administrator. Please contact support.");
+        }
+
         // Step 3: Generate JWT token
         String jwtToken = jwtUtil.generateToken(user.getEmail(), user.getRole());
 
