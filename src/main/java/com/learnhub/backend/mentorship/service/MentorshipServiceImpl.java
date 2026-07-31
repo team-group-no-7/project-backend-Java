@@ -2,7 +2,10 @@ package com.learnhub.backend.mentorship.service;
 
 import com.learnhub.backend.mentorship.dto.DoubtSessionRequest;
 import com.learnhub.backend.mentorship.dto.DoubtSessionResponse;
+import com.learnhub.backend.mentorship.dto.response.SessionResponse;
 import com.learnhub.backend.mentorship.entity.DoubtSession;
+import com.learnhub.backend.mentorship.enums.BookingStatus;
+import com.learnhub.backend.mentorship.enums.PaymentStatus;
 import com.learnhub.backend.mentorship.repository.DoubtSessionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,9 +31,9 @@ public class MentorshipServiceImpl implements MentorshipService {
         session.setDurationMinutes(request.getDurationMinutes());
         session.setSessionPrice(request.getSessionPrice());
         
-        // Default pending states
-        session.setBookingStatus("PENDING");
-        session.setPaymentStatus("UNPAID");
+        // Use enum types conforming to learner updates
+        session.setBookingStatus(BookingStatus.PENDING);
+        session.setPaymentStatus(PaymentStatus.PENDING);
 
         // Generate Jitsi Room Hash
         String cleanTopic = request.getTopic().replaceAll("[^a-zA-Z0-9-]", "").toLowerCase();
@@ -60,15 +63,24 @@ public class MentorshipServiceImpl implements MentorshipService {
         DoubtSession session = doubtSessionRepository.findById(sessionId)
                 .orElseThrow(() -> new RuntimeException("Doubt session not found with id: " + sessionId));
         
-        session.setPaymentStatus("PAID");
-        session.setBookingStatus("CONFIRMED");
+        session.setPaymentStatus(PaymentStatus.PAID);
+        session.setBookingStatus(BookingStatus.APPROVED);
         session.setTransactionId(transactionId);
 
         DoubtSession savedSession = doubtSessionRepository.save(session);
         return mapToResponse(savedSession);
     }
 
-    // Helper mapper to generate Jitsi Link dynamically
+    @Override
+    @Transactional(readOnly = true)
+    public List<SessionResponse> getLearnerSessions(Long learnerId) {
+        return doubtSessionRepository.findByLearnerId(learnerId)
+                .stream()
+                .map(this::mapToSessionResponse)
+                .collect(Collectors.toList());
+    }
+
+    // Helper mapper to generate DoubtSessionResponse
     private DoubtSessionResponse mapToResponse(DoubtSession session) {
         DoubtSessionResponse response = new DoubtSessionResponse();
         response.setId(session.getId());
@@ -78,16 +90,40 @@ public class MentorshipServiceImpl implements MentorshipService {
         response.setScheduledAt(session.getScheduledAt());
         response.setDurationMinutes(session.getDurationMinutes());
         response.setSessionPrice(session.getSessionPrice());
-        response.setBookingStatus(session.getBookingStatus());
-        response.setPaymentStatus(session.getPaymentStatus());
+        
+        if (session.getBookingStatus() != null) {
+            response.setBookingStatus(session.getBookingStatus().name());
+        }
+        if (session.getPaymentStatus() != null) {
+            response.setPaymentStatus(session.getPaymentStatus().name());
+        }
+        
         response.setTransactionId(session.getTransactionId());
         response.setJitsiRoomName(session.getJitsiRoomName());
         
-        // Compute active video link
         if (session.getJitsiRoomName() != null) {
             response.setJitsiMeetingLink("https://meet.jit.si/" + session.getJitsiRoomName());
         }
         
         return response;
+    }
+
+    // Helper mapper to generate Riya's SessionResponse
+    private SessionResponse mapToSessionResponse(DoubtSession session) {
+        String bookingStatus = session.getBookingStatus() != null ? session.getBookingStatus().name() : "PENDING";
+        String paymentStatus = session.getPaymentStatus() != null ? session.getPaymentStatus().name() : "PENDING";
+        String creatorName = session.getCreator() != null ? session.getCreator().getName() : "LearnHub Mentor";
+
+        return new SessionResponse(
+                session.getId(),
+                session.getTopic(),
+                session.getScheduledAt(),
+                session.getDurationMinutes(),
+                session.getSessionPrice(),
+                bookingStatus,
+                paymentStatus,
+                creatorName,
+                session.getJitsiRoomName()
+        );
     }
 }

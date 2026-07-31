@@ -1,19 +1,28 @@
 package com.learnhub.backend.mentorship.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.learnhub.backend.mentorship.dto.response.SessionResponse;
+import com.learnhub.backend.mentorship.service.MentorshipService;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
- * MentorshipController — Placeholder endpoint for live mentorship booking.
- * Dedicated package area for Team Member working on Mentorship & Jitsi configuration.
+ * MentorshipController — REST Controller for Learner Mentorship & Doubt Sessions.
+ * Implemented in pure Java with explicit constructor injection (no Lombok).
  */
 @RestController
-@RequestMapping("/api/mentorship")
+@RequestMapping("/api/sessions")
 public class MentorshipController {
 
-    @GetMapping("/status")
-    public String getStatus() {
-        return "Mentorship & Live Booking Module is Active";
+    private final MentorshipService service;
+
+    // Explicit Constructor Injection
+    public MentorshipController(MentorshipService service) {
+        this.service = service;
+    }
+
+    @GetMapping("/{learnerId}")
+    public List<SessionResponse> sessions(@PathVariable Long learnerId) {
+        return service.getLearnerSessions(learnerId);
     }
 }
