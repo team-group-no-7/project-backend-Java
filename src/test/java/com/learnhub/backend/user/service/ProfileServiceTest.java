@@ -69,12 +69,11 @@ class ProfileServiceTest {
     @Test
     @DisplayName("Should update user profile successfully")
     void updateProfile_Success() {
-        UpdateProfileRequest request = UpdateProfileRequest.builder()
-                .name("Riya Raj Updated")
-                .headline("Senior Developer Learner")
-                .location("Mumbai")
-                .avatarUrl("https://example.com/new_avatar.jpg")
-                .build();
+        UpdateProfileRequest request = new UpdateProfileRequest();
+        request.setName("Riya Raj Updated");
+        request.setHeadline("Senior Developer Learner");
+        request.setLocation("Mumbai");
+        request.setAvatarUrl("https://example.com/new_avatar.jpg");
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(sampleUser));
         when(userRepository.save(any(User.class))).thenReturn(sampleUser);

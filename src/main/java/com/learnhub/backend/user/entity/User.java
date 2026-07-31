@@ -23,7 +23,7 @@ public class User {
     @Column(nullable = false)
     private String role; // LEARNER, CREATOR, ADMIN
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String status = "ACTIVE"; // ACTIVE, FROZEN
 
     @Column(name = "avatar_url")

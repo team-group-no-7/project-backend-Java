@@ -42,7 +42,7 @@ class PurchaseServiceTest {
         Content content = new Content();
         content.setId(201L);
         content.setTitle("React Guide");
-        content.setType(ContentType.EBOOK);
+        content.setType("PDF");
         content.setPrice(new BigDecimal("299.00"));
         content.setCategory(category);
         content.setFileUrl("https://example.com/react.pdf");

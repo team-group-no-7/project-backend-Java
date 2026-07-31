@@ -62,6 +62,10 @@ public class SecurityConfig {
                 .requestMatchers("/api/public/**").permitAll()
                 .requestMatchers("/api/payment/**").permitAll()
                 .requestMatchers("/api/billing/**").permitAll()
+                .requestMatchers("/api/contents/**").permitAll()
+                .requestMatchers("/api/contents").permitAll()
+                .requestMatchers("/api/categories").permitAll()
+                .requestMatchers("/api/creators/**").permitAll()
 
                 // PROTECTED ENDPOINTS — JWT token required for everything else
                 .anyRequest().authenticated()

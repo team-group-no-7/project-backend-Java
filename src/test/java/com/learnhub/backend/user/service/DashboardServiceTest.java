@@ -40,7 +40,7 @@ class DashboardServiceTest {
         Content content = new Content();
         content.setId(101L);
         content.setTitle("Java Masterclass");
-        content.setType(ContentType.COURSE);
+        content.setType("ARTICLE");
         content.setCategory(category);
         content.setFileUrl("https://example.com/java.pdf");
 
