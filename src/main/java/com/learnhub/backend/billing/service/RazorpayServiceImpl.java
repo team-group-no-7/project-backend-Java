@@ -8,6 +8,7 @@ import com.learnhub.backend.billing.entity.Purchase;
 import com.learnhub.backend.billing.repository.PurchaseRepository;
 import com.learnhub.backend.catalog.entity.Content;
 import com.learnhub.backend.catalog.repository.ContentRepository;
+import com.learnhub.backend.user.repository.UserRepository;
 import com.learnhub.backend.common.exception.BadRequestException;
 import com.learnhub.backend.common.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,6 +34,7 @@ public class RazorpayServiceImpl implements RazorpayService {
 
     private final PurchaseRepository purchaseRepository;
     private final ContentRepository contentRepository;
+    private final UserRepository userRepository;
 
     @Value("${razorpay.key.id:rzp_test_learnhub123}")
     private String keyId;
@@ -41,9 +43,10 @@ public class RazorpayServiceImpl implements RazorpayService {
     private String keySecret;
 
     // Explicit constructor dependency injection (No Lombok)
-    public RazorpayServiceImpl(PurchaseRepository purchaseRepository, ContentRepository contentRepository) {
+    public RazorpayServiceImpl(PurchaseRepository purchaseRepository, ContentRepository contentRepository, UserRepository userRepository) {
         this.purchaseRepository = purchaseRepository;
         this.contentRepository = contentRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -99,7 +102,10 @@ public class RazorpayServiceImpl implements RazorpayService {
                 .orElseGet(() -> {
                     // Create new purchase record if not pre-registered
                     Purchase newP = new Purchase();
-                    newP.setUserId(request.getUserId() != null ? request.getUserId() : 101L);
+                    Long uId = request.getUserId() != null ? request.getUserId() : 101L;
+                    userRepository.findById(uId).ifPresent(newP::setUser);
+                    newP.setUserId(uId);
+
                     // Load and attach Content entity so JOIN FETCH works in library queries
                     Long cId = request.getContentId() != null ? request.getContentId() : 10L;
                     contentRepository.findById(cId).ifPresent(newP::setContent);
@@ -108,6 +114,14 @@ public class RazorpayServiceImpl implements RazorpayService {
                     newP.setTransactionId(orderId);
                     return newP;
                 });
+
+        // Ensure user and content entity relations are attached
+        if (purchase.getUser() == null && request.getUserId() != null) {
+            userRepository.findById(request.getUserId()).ifPresent(purchase::setUser);
+        }
+        if (purchase.getContent() == null && request.getContentId() != null) {
+            contentRepository.findById(request.getContentId()).ifPresent(purchase::setContent);
+        }
 
         purchase.setPaymentStatus("SUCCESS");
         purchase.setTransactionId(paymentId != null ? paymentId : orderId);
