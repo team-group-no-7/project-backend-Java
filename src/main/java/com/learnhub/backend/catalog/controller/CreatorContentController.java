@@ -85,10 +85,10 @@ public class CreatorContentController {
     }
 
     /*
-     * GET /api/creator/content/my-resources/{creatorId}
+     * GET /api/creator/content/{creatorId} & /api/creator/content/my-resources/{creatorId}
      * Fetch all resources created by a creator for the Management Grid.
      */
-    @GetMapping("/my-resources/{creatorId}")
+    @GetMapping({"/{creatorId}", "/my-resources/{creatorId}"})
     public ResponseEntity<ApiResponse<List<ContentResponse>>> getMyResources(@PathVariable Long creatorId) {
         List<ContentResponse> resources = creatorContentService.getCreatorContents(creatorId);
         return ResponseEntity.ok(ApiResponse.success("Creator resources retrieved successfully", resources));
