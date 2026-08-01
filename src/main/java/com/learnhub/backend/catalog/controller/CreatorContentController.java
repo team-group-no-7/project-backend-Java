@@ -20,7 +20,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/creator/content")
-@PreAuthorize("hasRole('CREATOR') or hasRole('ADMIN')")
+@PreAuthorize("isAuthenticated()")
 public class CreatorContentController {
 
     private final CreatorContentService creatorContentService;

@@ -71,9 +71,9 @@ public class SecurityConfig {
                 .requestMatchers("/api/creators/**").permitAll()
                 .requestMatchers("/api/purchases/**").permitAll()
                 .requestMatchers("/api/sessions/**").permitAll()
-                // Protected Creator and Admin endpoints — Requires valid JWT token & role
+                // Protected Creator and Admin endpoints — Requires valid JWT token & session
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                .requestMatchers("/api/creator/content/**").hasAnyRole("CREATOR", "ADMIN")
+                .requestMatchers("/api/creator/content/**").authenticated()
                 .requestMatchers("/api/qa/**").permitAll()
                 .requestMatchers("/uploads/**").permitAll()
 
