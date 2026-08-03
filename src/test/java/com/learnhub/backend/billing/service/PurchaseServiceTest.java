@@ -1,13 +1,12 @@
 package com.learnhub.backend.billing.service;
 
-import com.learnhub.backend.billing.dto.response.PurchaseResponse;
-import com.learnhub.backend.billing.entity.Purchase;
-import com.learnhub.backend.billing.repository.PurchaseRepository;
-import com.learnhub.backend.billing.service.impl.PurchaseServiceImpl;
-import com.learnhub.backend.catalog.entity.Category;
-import com.learnhub.backend.catalog.entity.Content;
-import com.learnhub.backend.catalog.enums.ContentType;
-import com.learnhub.backend.user.dto.response.LibraryResponse;
+import com.learnhub.backend.modules.payment.dto.response.PurchaseResponse;
+import com.learnhub.backend.modules.payment.entity.Purchase;
+import com.learnhub.backend.modules.payment.repository.PurchaseRepository;
+import com.learnhub.backend.modules.payment.service.impl.PurchaseServiceImpl;
+import com.learnhub.backend.modules.resource.entity.Category;
+import com.learnhub.backend.modules.resource.entity.Content;
+import com.learnhub.backend.modules.user.dto.response.LibraryResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

@@ -1,11 +1,11 @@
 package com.learnhub.backend.user.service;
 
 import com.learnhub.backend.common.exception.ResourceNotFoundException;
-import com.learnhub.backend.user.dto.request.UpdateProfileRequest;
-import com.learnhub.backend.user.dto.response.ProfileResponse;
-import com.learnhub.backend.user.entity.User;
-import com.learnhub.backend.user.repository.UserRepository;
-import com.learnhub.backend.user.service.impl.ProfileServiceImpl;
+import com.learnhub.backend.modules.user.dto.request.UpdateProfileRequest;
+import com.learnhub.backend.modules.user.dto.response.ProfileResponse;
+import com.learnhub.backend.modules.user.entity.User;
+import com.learnhub.backend.modules.user.repository.UserRepository;
+import com.learnhub.backend.modules.user.service.impl.ProfileServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

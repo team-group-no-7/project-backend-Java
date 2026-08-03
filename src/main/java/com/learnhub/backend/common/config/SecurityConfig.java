@@ -63,17 +63,17 @@ public class SecurityConfig {
 
                 // Public content, payment, purchases, sessions, admin and file endpoints
                 .requestMatchers("/api/public/**").permitAll()
-                .requestMatchers("/api/payment/**").permitAll()
-                .requestMatchers("/api/billing/**").permitAll()
+                .requestMatchers("/api/payment/**").authenticated()
+                .requestMatchers("/api/billing/**").authenticated()
                 .requestMatchers("/api/contents/**").permitAll()
                 .requestMatchers("/api/contents").permitAll()
                 .requestMatchers("/api/categories").permitAll()
-                .requestMatchers("/api/creators/**").permitAll()
-                .requestMatchers("/api/purchases/**").permitAll()
-                .requestMatchers("/api/sessions/**").permitAll()
-                .requestMatchers("/api/creator/content/**").permitAll()
-                .requestMatchers("/api/admin/**").permitAll()
-                .requestMatchers("/api/qa/**").permitAll()
+                .requestMatchers("/api/creators/**").hasRole("CREATOR")
+                .requestMatchers("/api/purchases/**").authenticated()
+                .requestMatchers("/api/sessions/**").authenticated()
+                .requestMatchers("/api/creator/content/**").hasRole("CREATOR")
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/qa/**").authenticated()
                 .requestMatchers("/uploads/**").permitAll()
 
                 // PROTECTED ENDPOINTS — JWT token required for everything else
