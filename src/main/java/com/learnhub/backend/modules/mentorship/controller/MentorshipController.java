@@ -56,6 +56,13 @@ public class MentorshipController {
         return ResponseEntity.ok(ApiResponse.success("Mentorship sessions retrieved successfully", sessions));
     }
 
+    /** GET /api/sessions/{sessionId}/detail — Fetch doubt session details if caller is participant or admin */
+    @GetMapping("/{sessionId}/detail")
+    public ResponseEntity<ApiResponse<DoubtSessionResponse>> getSessionDetail(@PathVariable Long sessionId) {
+        DoubtSessionResponse response = service.getSessionDetail(sessionId);
+        return ResponseEntity.ok(ApiResponse.success("Mentorship session details retrieved successfully", response));
+    }
+
     private Long resolveUserId(Long requestedUserId) {
         String currentEmail = SecurityUtils.getCurrentUserEmail();
         User currentUser = userRepository.findByEmail(currentEmail)

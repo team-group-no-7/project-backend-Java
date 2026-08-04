@@ -135,12 +135,22 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findById(refreshToken.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
+        if ("FROZEN".equalsIgnoreCase(user.getStatus()) || "SUSPENDED".equalsIgnoreCase(user.getStatus())) {
+            log.warn("Token refresh blocked. Account is frozen for user ID: {}", user.getId());
+            throw new BadRequestException("Your account has been frozen by an administrator. Please contact support.");
+        }
+
+        // Revoke old refresh token (Token Rotation)
+        refreshToken.setRevoked(true);
+        refreshTokenRepository.save(refreshToken);
+
         String newJwtToken = jwtUtil.generateToken(user.getEmail(), user.getRole(), user.getId());
-        log.info("Issued new JWT token for user ID: {}", user.getId());
+        RefreshToken newRefreshToken = createRefreshToken(user.getId());
+        log.info("Issued new JWT token and rotated refresh token for user ID: {}", user.getId());
 
         return new AuthResponse(
                 newJwtToken,
-                refreshToken.getToken(),
+                newRefreshToken.getToken(),
                 user.getId(),
                 user.getName(),
                 user.getEmail(),
@@ -161,6 +171,9 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private RefreshToken createRefreshToken(Long userId) {
+        // Revoke/clean up previous refresh tokens for this user
+        refreshTokenRepository.deleteByUserId(userId);
+
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setUserId(userId);
         refreshToken.setToken(UUID.randomUUID().toString());

@@ -6,7 +6,9 @@ import com.learnhub.backend.modules.payment.dto.PaymentVerificationRequestDto;
 import com.learnhub.backend.modules.payment.dto.PaymentVerificationResponseDto;
 import com.learnhub.backend.modules.payment.entity.Purchase;
 import com.learnhub.backend.modules.payment.service.RazorpayService;
+import com.learnhub.backend.modules.user.repository.UserRepository;
 import com.learnhub.backend.common.dto.ApiResponse;
+import com.learnhub.backend.common.util.SecurityUtils;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.HttpStatus;
@@ -28,10 +30,12 @@ import java.util.List;
 public class PaymentController {
 
     private final RazorpayService razorpayService;
+    private final UserRepository userRepository;
 
     // Explicit constructor dependency injection (No Lombok)
-    public PaymentController(RazorpayService razorpayService) {
+    public PaymentController(RazorpayService razorpayService, UserRepository userRepository) {
         this.razorpayService = razorpayService;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -57,10 +61,11 @@ public class PaymentController {
 
     /**
      * GET /api/payment/purchases/{userId}
-     * Returns purchase history DTOs for a specific user.
+     * Returns purchase history DTOs for a specific user after verifying ownership/admin authority.
      */
     @GetMapping("/purchases/{userId}")
     public ResponseEntity<ApiResponse<List<com.learnhub.backend.modules.payment.dto.response.PurchaseResponse>>> getUserPurchases(@PathVariable Long userId) {
+        SecurityUtils.validateOwnershipByUserId(userId, userRepository);
         List<Purchase> purchases = razorpayService.getPurchasesForUser(userId);
         List<com.learnhub.backend.modules.payment.dto.response.PurchaseResponse> responseList = purchases.stream()
                 .map(p -> new com.learnhub.backend.modules.payment.dto.response.PurchaseResponse(

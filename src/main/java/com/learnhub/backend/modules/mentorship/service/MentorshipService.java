@@ -15,5 +15,7 @@ public interface MentorshipService {
 
     DoubtSessionResponse confirmPayment(Long sessionId, String transactionId);
 
+    DoubtSessionResponse getSessionDetail(Long sessionId);
+
     List<SessionResponse> getLearnerSessions(Long learnerId);
 }

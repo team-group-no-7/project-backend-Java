@@ -12,18 +12,18 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * DashboardController — REST Controller for Learner Dashboard Metrics.
+ * LearnerDashboardController — REST Controller for Learner Dashboard Metrics.
  * Refactored with class-level @PreAuthorize and automatic JWT identity resolution.
  */
 @RestController
 @RequestMapping("/api/learners/dashboard")
 @PreAuthorize("isAuthenticated()")
-public class DashboardController {
+public class LearnerDashboardController {
 
     private final DashboardService dashboardService;
     private final UserRepository userRepository;
 
-    public DashboardController(DashboardService dashboardService, UserRepository userRepository) {
+    public LearnerDashboardController(DashboardService dashboardService, UserRepository userRepository) {
         this.dashboardService = dashboardService;
         this.userRepository = userRepository;
     }

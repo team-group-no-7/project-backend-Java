@@ -7,7 +7,9 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "purchases")
+@Table(name = "purchases", uniqueConstraints = {
+    @UniqueConstraint(name = "uk_purchase_user_content", columnNames = {"user_id", "content_id"})
+})
 public class Purchase {
 
     @Id
@@ -105,4 +107,17 @@ public class Purchase {
 
     public LocalDateTime getPurchasedAt() { return purchasedAt; }
     public void setPurchasedAt(LocalDateTime purchasedAt) { this.purchasedAt = purchasedAt; }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Purchase purchase = (Purchase) o;
+        return id != null ? id.equals(purchase.id) : (transactionId != null && transactionId.equals(purchase.transactionId));
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

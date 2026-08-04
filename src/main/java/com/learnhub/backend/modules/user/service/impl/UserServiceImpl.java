@@ -127,15 +127,12 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
         SecurityUtils.validateOwnership(user.getEmail());
 
-        String currentRole = user.getRole();
-        if (currentRole == null || currentRole.trim().isEmpty()) {
-            user.setRole("LEARNER,CREATOR");
-        } else if (!currentRole.contains("CREATOR")) {
-            user.setRole(currentRole + ",CREATOR");
+        if (!"CREATOR".equalsIgnoreCase(user.getRole())) {
+            user.setRole("CREATOR");
         }
 
         User updatedUser = userRepository.save(user);
-        log.info("Successfully upgraded user ID: {} to roles: {}", updatedUser.getId(), updatedUser.getRole());
+        log.info("Successfully upgraded user ID: {} to role: {}", updatedUser.getId(), updatedUser.getRole());
         return mapToProfileResponse(updatedUser);
     }
 

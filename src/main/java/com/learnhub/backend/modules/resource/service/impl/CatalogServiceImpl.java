@@ -97,6 +97,10 @@ public class CatalogServiceImpl implements CatalogService {
         Content content = contentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Content not found with id: " + id));
 
+        if (content.getCreator() != null) {
+            com.learnhub.backend.common.util.SecurityUtils.validateOwnership(content.getCreator().getEmail());
+        }
+
         Category category = content.getCategory();
         if (category != null && category.getResourceCount() != null && category.getResourceCount() > 0) {
             category.setResourceCount(category.getResourceCount() - 1);

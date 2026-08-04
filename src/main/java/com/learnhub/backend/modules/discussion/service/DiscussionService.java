@@ -25,4 +25,9 @@ public interface DiscussionService {
      * Post a reply to an existing discussion thread.
      */
     QAThreadResponse addReply(Long threadId, QAReply reply);
+
+    /**
+     * Delete a Q&A thread after verifying author ownership or admin authority.
+     */
+    void deleteThread(Long threadId);
 }

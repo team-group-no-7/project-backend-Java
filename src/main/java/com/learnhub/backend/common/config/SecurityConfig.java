@@ -74,8 +74,8 @@ public class SecurityConfig {
                 ).permitAll()
 
                 // ROLE-PROTECTED ENDPOINTS
-                .requestMatchers("/api/creators/**").hasRole("CREATOR")
-                .requestMatchers("/api/creator/content/**").hasRole("CREATOR")
+                .requestMatchers("/api/creators/**").hasAnyRole("CREATOR", "ADMIN")
+                .requestMatchers("/api/creator/content/**").hasAnyRole("CREATOR", "ADMIN")
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
                 // PROTECTED ENDPOINTS — JWT token required for everything else

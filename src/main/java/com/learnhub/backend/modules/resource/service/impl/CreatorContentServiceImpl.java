@@ -53,9 +53,10 @@ public class CreatorContentServiceImpl implements CreatorContentService {
     public ContentResponse publishContent(CreateContentRequest request) {
         log.info("Publishing new content resource with title: '{}'", request.getTitle());
 
-        Long creatorId = request.getCreatorId() != null ? request.getCreatorId() : 101L;
-        User creatorUser = userRepository.findById(creatorId)
-                .orElseGet(() -> userRepository.findAll().stream().findFirst().orElse(null));
+        String currentEmail = SecurityUtils.getCurrentUserEmail();
+        User creatorUser = userRepository.findByEmail(currentEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("Authenticated creator user context not found"));
+        Long creatorId = creatorUser.getId();
 
         Category category = resolveCategory(request.getCategoryId(), request.getCategoryName());
 

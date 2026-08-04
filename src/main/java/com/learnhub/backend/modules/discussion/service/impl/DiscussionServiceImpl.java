@@ -2,12 +2,18 @@ package com.learnhub.backend.modules.discussion.service.impl;
 
 import com.learnhub.backend.common.exception.BadRequestException;
 import com.learnhub.backend.common.exception.ResourceNotFoundException;
+import com.learnhub.backend.common.util.SecurityUtils;
 import com.learnhub.backend.modules.discussion.dto.response.QAReplyResponse;
 import com.learnhub.backend.modules.discussion.dto.response.QAThreadResponse;
 import com.learnhub.backend.modules.discussion.entity.QAReply;
 import com.learnhub.backend.modules.discussion.entity.QAThread;
 import com.learnhub.backend.modules.discussion.repository.QAThreadRepository;
 import com.learnhub.backend.modules.discussion.service.DiscussionService;
+import com.learnhub.backend.modules.resource.entity.Content;
+import com.learnhub.backend.modules.resource.repository.ContentRepository;
+import com.learnhub.backend.modules.user.entity.User;
+import com.learnhub.backend.modules.user.repository.UserRepository;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,9 +27,15 @@ import java.util.stream.Collectors;
 public class DiscussionServiceImpl implements DiscussionService {
 
     private final QAThreadRepository qaThreadRepository;
+    private final UserRepository userRepository;
+    private final ContentRepository contentRepository;
 
-    public DiscussionServiceImpl(QAThreadRepository qaThreadRepository) {
+    public DiscussionServiceImpl(QAThreadRepository qaThreadRepository,
+                                 UserRepository userRepository,
+                                 ContentRepository contentRepository) {
         this.qaThreadRepository = qaThreadRepository;
+        this.userRepository = userRepository;
+        this.contentRepository = contentRepository;
     }
 
     @Override
@@ -51,14 +63,42 @@ public class DiscussionServiceImpl implements DiscussionService {
         QAThread thread = qaThreadRepository.findById(threadId)
                 .orElseThrow(() -> new ResourceNotFoundException("Thread not found with id: " + threadId));
 
+        String currentEmail = SecurityUtils.getCurrentUserEmail();
+        Content content = contentRepository.findById(thread.getContentId()).orElse(null);
+
+        boolean isCourseAuthor = content != null && content.getCreator() != null && currentEmail.equalsIgnoreCase(content.getCreator().getEmail());
+        boolean isAdmin = SecurityUtils.isAdmin();
+
         thread.getReplies().add(reply);
-        if ("CREATOR".equalsIgnoreCase(reply.getRole())) {
+        if (isCourseAuthor || isAdmin) {
             reply.setIsVerifiedAnswer(true);
             thread.setIsResolved(true);
+        } else {
+            reply.setIsVerifiedAnswer(false);
         }
 
         QAThread updated = qaThreadRepository.save(thread);
         return mapToResponse(updated);
+    }
+
+    @Override
+    @Transactional
+    public void deleteThread(Long threadId) {
+        QAThread thread = qaThreadRepository.findById(threadId)
+                .orElseThrow(() -> new ResourceNotFoundException("Discussion thread not found with id: " + threadId));
+
+        if (!SecurityUtils.isAdmin()) {
+            String currentEmail = SecurityUtils.getCurrentUserEmail();
+            User currentUser = userRepository.findByEmail(currentEmail).orElse(null);
+            boolean isAuthorNameMatch = currentUser != null && currentUser.getName() != null && currentUser.getName().equalsIgnoreCase(thread.getAuthorName());
+            boolean isAuthorEmailMatch = currentEmail.equalsIgnoreCase(thread.getAuthorName());
+
+            if (!isAuthorNameMatch && !isAuthorEmailMatch) {
+                throw new AccessDeniedException("You are not authorized to delete another user's discussion post.");
+            }
+        }
+
+        qaThreadRepository.delete(thread);
     }
 
     private QAThreadResponse mapToResponse(QAThread thread) {

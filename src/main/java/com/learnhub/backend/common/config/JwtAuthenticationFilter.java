@@ -62,6 +62,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     .map(r -> new SimpleGrantedAuthority("ROLE_" + r.trim()))
                     .collect(Collectors.toList());
 
+            // Ensure Creator possesses Learner capabilities (Creator is an upgraded Learner)
+            if (authorities.stream().anyMatch(a -> "ROLE_CREATOR".equals(a.getAuthority()))
+                    && authorities.stream().noneMatch(a -> "ROLE_LEARNER".equals(a.getAuthority()))) {
+                authorities.add(new SimpleGrantedAuthority("ROLE_LEARNER"));
+            }
+
             // Step 6: Create a Spring Security Authentication object
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(

@@ -59,6 +59,22 @@ public class RazorpayServiceImpl implements RazorpayService {
                 .orElseThrow(() -> new ResourceNotFoundException("Content not found with id: " + request.getContentId()));
 
         Long userId = request.getUserId() != null ? request.getUserId() : 101L;
+        String currentEmail = com.learnhub.backend.common.util.SecurityUtils.getCurrentUserEmail();
+        if (content.getCreator() != null && currentEmail.equalsIgnoreCase(content.getCreator().getEmail())) {
+            log.warn("Self-purchase attempt blocked for creator: {} on content ID: {}", currentEmail, content.getId());
+            throw new BadRequestException("Creators cannot purchase their own published content.");
+        }
+
+        // Checkpoint 3.1: Duplicate Purchase State Prevention Check
+        boolean alreadyPurchased = purchaseRepository.findByUserIdAndContentId(userId, content.getId())
+                .map(p -> "SUCCESS".equalsIgnoreCase(p.getPaymentStatus()))
+                .orElse(false);
+
+        if (alreadyPurchased) {
+            log.warn("Duplicate purchase attempt blocked for user ID: {} on content ID: {}", userId, content.getId());
+            throw new BadRequestException("You have already purchased this learning resource.");
+        }
+
         BigDecimal amount = request.getAmount() != null ? request.getAmount() : content.getPrice();
 
         String randomHash = UUID.randomUUID().toString().substring(0, 8);
@@ -129,15 +145,19 @@ public class RazorpayServiceImpl implements RazorpayService {
             contentRepository.findById(request.getContentId()).ifPresent(purchase::setContent);
         }
 
+        boolean alreadyVerified = "SUCCESS".equalsIgnoreCase(purchase.getPaymentStatus());
+
         purchase.setPaymentStatus("SUCCESS");
         purchase.setTransactionId(paymentId != null ? paymentId : orderId);
         Purchase savedPurchase = purchaseRepository.save(purchase);
         log.info("Payment verified and access unlocked for purchase ID: {}", savedPurchase.getId());
 
-        contentRepository.findById(savedPurchase.getContentId()).ifPresent(content -> {
-            content.setLearnersCount((content.getLearnersCount() != null ? content.getLearnersCount() : 0) + 1);
-            contentRepository.save(content);
-        });
+        if (!alreadyVerified) {
+            contentRepository.findById(savedPurchase.getContentId()).ifPresent(content -> {
+                content.setLearnersCount((content.getLearnersCount() != null ? content.getLearnersCount() : 0) + 1);
+                contentRepository.save(content);
+            });
+        }
 
         return new PaymentVerificationResponseDto(
                 "SUCCESS",

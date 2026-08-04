@@ -10,6 +10,7 @@ import com.learnhub.backend.modules.mentorship.repository.DoubtSessionRepository
 import com.learnhub.backend.modules.mentorship.service.MentorshipService;
 import com.learnhub.backend.common.exception.ResourceNotFoundException;
 import com.learnhub.backend.common.util.SecurityUtils;
+import com.learnhub.backend.modules.user.entity.User;
 import com.learnhub.backend.modules.user.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +41,26 @@ public class MentorshipServiceImpl implements MentorshipService {
     @Override
     public DoubtSessionResponse bookSession(DoubtSessionRequest request) {
         log.info("Booking mentorship doubt session for topic: '{}'", request.getTopic());
+        if (request.getLearnerId() != null) {
+            SecurityUtils.validateOwnershipByUserId(request.getLearnerId(), userRepository);
+        }
+
+        // Creator self-booking prevention check
+        if (request.getLearnerId() != null && request.getCreatorId() != null && request.getLearnerId().equals(request.getCreatorId())) {
+            log.warn("Mentorship session booking failed. Self-booking attempted by user ID: {}", request.getLearnerId());
+            throw new com.learnhub.backend.common.exception.BadRequestException("Creators cannot book mentorship sessions with themselves.");
+        }
+
+        // Checkpoint 3.3: Business Constraint Validation (Past-date prevention & non-negative price)
+        if (request.getScheduledAt() != null && request.getScheduledAt().isBefore(java.time.LocalDateTime.now().minusMinutes(5))) {
+            log.warn("Mentorship session booking failed. Past date requested: {}", request.getScheduledAt());
+            throw new com.learnhub.backend.common.exception.BadRequestException("Mentorship session scheduled time must be in the future.");
+        }
+
+        if (request.getSessionPrice() != null && request.getSessionPrice().compareTo(java.math.BigDecimal.ZERO) < 0) {
+            throw new com.learnhub.backend.common.exception.BadRequestException("Session price cannot be negative.");
+        }
+
         DoubtSession session = new DoubtSession();
         session.setLearnerId(request.getLearnerId());
         session.setCreatorId(request.getCreatorId());
@@ -91,6 +112,29 @@ public class MentorshipServiceImpl implements MentorshipService {
         DoubtSession savedSession = doubtSessionRepository.save(session);
         log.info("Successfully confirmed payment for session ID: {}", savedSession.getId());
         return mapToResponse(savedSession);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public DoubtSessionResponse getSessionDetail(Long sessionId) {
+        log.info("Fetching mentorship session detail for session ID: {}", sessionId);
+        DoubtSession session = doubtSessionRepository.findById(sessionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Doubt session not found with id: " + sessionId));
+
+        if (!SecurityUtils.isAdmin()) {
+            String currentEmail = SecurityUtils.getCurrentUserEmail();
+            User currentUser = userRepository.findByEmail(currentEmail)
+                    .orElseThrow(() -> new ResourceNotFoundException("Authenticated user context not found"));
+
+            boolean isLearnerParticipant = session.getLearnerId() != null && session.getLearnerId().equals(currentUser.getId());
+            boolean isCreatorParticipant = session.getCreatorId() != null && session.getCreatorId().equals(currentUser.getId());
+
+            if (!isLearnerParticipant && !isCreatorParticipant) {
+                throw new org.springframework.security.access.AccessDeniedException("You are not a participant in this mentorship session.");
+            }
+        }
+
+        return mapToResponse(session);
     }
 
     @Override

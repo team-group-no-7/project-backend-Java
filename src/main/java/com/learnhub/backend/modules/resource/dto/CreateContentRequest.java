@@ -25,7 +25,6 @@ public class CreateContentRequest {
     private Long categoryId;
     private String categoryName; // e.g. "Development", "Data Science", "AI Engineering"
 
-    @NotNull(message = "Creator ID is required")
     private Long creatorId;
 
     // Default Constructor (Required by Jackson for JSON deserialization)

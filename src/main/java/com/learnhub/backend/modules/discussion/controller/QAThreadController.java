@@ -45,4 +45,10 @@ public class QAThreadController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Reply posted successfully", updated));
     }
+
+    @DeleteMapping("/thread/{threadId}")
+    public ResponseEntity<ApiResponse<String>> deleteThread(@PathVariable Long threadId) {
+        discussionService.deleteThread(threadId);
+        return ResponseEntity.ok(ApiResponse.success("Discussion post deleted successfully", "DELETED"));
+    }
 }
