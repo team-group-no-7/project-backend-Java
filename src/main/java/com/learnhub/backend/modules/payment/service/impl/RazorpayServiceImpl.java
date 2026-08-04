@@ -58,8 +58,11 @@ public class RazorpayServiceImpl implements RazorpayService {
         Content content = contentRepository.findById(request.getContentId())
                 .orElseThrow(() -> new ResourceNotFoundException("Content not found with id: " + request.getContentId()));
 
-        Long userId = request.getUserId() != null ? request.getUserId() : 101L;
         String currentEmail = com.learnhub.backend.common.util.SecurityUtils.getCurrentUserEmail();
+        User currentUser = userRepository.findByEmail(currentEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("Authenticated user context not found"));
+        Long userId = currentUser.getId();
+
         if (content.getCreator() != null && currentEmail.equalsIgnoreCase(content.getCreator().getEmail())) {
             log.warn("Self-purchase attempt blocked for creator: {} on content ID: {}", currentEmail, content.getId());
             throw new BadRequestException("Creators cannot purchase their own published content.");
