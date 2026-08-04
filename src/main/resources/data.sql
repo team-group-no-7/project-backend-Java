@@ -31,7 +31,7 @@ INSERT INTO contents (id, title, description, preview_text, price, type, level, 
 ON CONFLICT (id) DO NOTHING;
 
 -- 4. Insert Seed Purchases
-INSERT INTO purchases (id, user_id, content_id, amount_paid, payment_status, payment_id, purchased_at) VALUES
+INSERT INTO purchases (id, user_id, content_id, amount_paid, payment_status, transaction_id, purchased_at) VALUES
 (701, 101, 10, 499.00, 'SUCCESS', 'pay_sample_arjun_101_10', CURRENT_TIMESTAMP - INTERVAL '2 days'),
 (702, 101, 12, 799.00, 'SUCCESS', 'pay_sample_arjun_101_12', CURRENT_TIMESTAMP - INTERVAL '1 day'),
 (703, 102, 13, 399.00, 'SUCCESS', 'pay_sample_priya_102_13', CURRENT_TIMESTAMP - INTERVAL '5 hours')
