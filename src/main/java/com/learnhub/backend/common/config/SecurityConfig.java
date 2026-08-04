@@ -76,6 +76,13 @@ public class SecurityConfig {
                 .requestMatchers("/api/qa/**").authenticated()
                 .requestMatchers("/uploads/**").permitAll()
 
+                // Swagger/OpenAPI
+                .requestMatchers(
+                        "/v3/api-docs/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html"
+                ).permitAll()
+
                 // PROTECTED ENDPOINTS — JWT token required for everything else
                 .anyRequest().authenticated()
             )

@@ -1,7 +1,7 @@
 package com.learnhub.backend.user.service;
 
 import com.learnhub.backend.common.exception.ResourceNotFoundException;
-import com.learnhub.backend.modules.user.dto.request.UpdateProfileRequest;
+import com.learnhub.backend.modules.user.dto.UpdateProfileRequest;
 import com.learnhub.backend.modules.user.dto.response.ProfileResponse;
 import com.learnhub.backend.modules.user.entity.User;
 import com.learnhub.backend.modules.user.repository.UserRepository;
