@@ -7,6 +7,8 @@ import com.learnhub.backend.modules.user.dto.response.ContinueLearningResponse;
 import com.learnhub.backend.modules.user.dto.response.DashboardResponse;
 import com.learnhub.backend.modules.user.repository.UserRepository;
 import com.learnhub.backend.modules.user.service.DashboardService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,11 +17,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * DashboardServiceImpl — Implementation class for Learner Dashboard Service.
- * Implemented in pure Java with explicit constructor injection (no Lombok).
+ * DashboardServiceImpl — Implementation class for Learner Dashboard Service with SLF4J logging.
  */
 @Service
 public class DashboardServiceImpl implements DashboardService {
+
+    private static final Logger log = LoggerFactory.getLogger(DashboardServiceImpl.class);
 
     private final PurchaseRepository purchaseRepository;
     private final UserRepository userRepository;
@@ -32,6 +35,7 @@ public class DashboardServiceImpl implements DashboardService {
     @Override
     @Transactional(readOnly = true)
     public DashboardResponse getDashboard(Long userId) {
+        log.info("Computing learner dashboard metrics for user ID: {}", userId);
         SecurityUtils.validateOwnershipByUserId(userId, userRepository);
         List<Purchase> purchases = purchaseRepository.findLibraryByUserId(userId);
 
@@ -52,6 +56,7 @@ public class DashboardServiceImpl implements DashboardService {
                 })
                 .collect(Collectors.toList());
 
+        log.info("Learner ID: {} dashboard stats — Resources: {}, Investment: ₹{}", userId, purchases.size(), investment);
         return new DashboardResponse(
                 (long) purchases.size(),
                 0L,

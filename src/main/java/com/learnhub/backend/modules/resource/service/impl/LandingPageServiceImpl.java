@@ -11,6 +11,8 @@ import com.learnhub.backend.modules.resource.repository.ContentRepository;
 import com.learnhub.backend.modules.resource.service.LandingPageService;
 import com.learnhub.backend.modules.user.entity.User;
 import com.learnhub.backend.modules.user.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,18 +22,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * LandingPageServiceImpl — Implementation of LandingPageService.
- * Pure Java implementation using explicit constructor dependency injection.
+ * LandingPageServiceImpl — Implementation of LandingPageService with SLF4J logging.
  */
 @Service
 @Transactional(readOnly = true)
 public class LandingPageServiceImpl implements LandingPageService {
 
+    private static final Logger log = LoggerFactory.getLogger(LandingPageServiceImpl.class);
+
     private final ContentRepository contentRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
 
-    // Explicit constructor dependency injection (No Lombok)
     public LandingPageServiceImpl(ContentRepository contentRepository,
                                   CategoryRepository categoryRepository,
                                   UserRepository userRepository) {
@@ -42,6 +44,7 @@ public class LandingPageServiceImpl implements LandingPageService {
 
     @Override
     public LandingPageDataResponse getLandingPageData() {
+        log.info("Aggregating landing page data");
         List<ContentSummaryResponse> featured = getFeaturedContents();
         List<ContentSummaryResponse> trending = getTrendingContents();
         List<CategoryResponse> categories = getCategories();
@@ -64,6 +67,7 @@ public class LandingPageServiceImpl implements LandingPageService {
 
     @Override
     public List<ContentSummaryResponse> getFeaturedContents() {
+        log.info("Fetching landing page featured contents");
         List<Content> contents = contentRepository.findByFeaturedTrue();
         if (contents.isEmpty()) {
             contents = contentRepository.findTop6ByOrderByRatingDesc();
@@ -73,6 +77,7 @@ public class LandingPageServiceImpl implements LandingPageService {
 
     @Override
     public List<ContentSummaryResponse> getTrendingContents() {
+        log.info("Fetching landing page trending contents");
         List<Content> contents = contentRepository.findByIsTrendingTrue();
         if (contents.isEmpty()) {
             contents = contentRepository.findTop10ByOrderByLearnersCountDesc();
@@ -82,6 +87,7 @@ public class LandingPageServiceImpl implements LandingPageService {
 
     @Override
     public List<CategoryResponse> getCategories() {
+        log.info("Fetching landing page categories");
         List<Category> categories = categoryRepository.findAllByOrderByNameAsc();
         return categories.stream()
                 .map(c -> new CategoryResponse(c.getId(), c.getName(), c.getResourceCount()))
@@ -90,6 +96,7 @@ public class LandingPageServiceImpl implements LandingPageService {
 
     @Override
     public List<TopCreatorResponse> getTopCreators() {
+        log.info("Fetching landing page top creators");
         List<User> creators = userRepository.findByRole("CREATOR");
         List<TopCreatorResponse> creatorResponses = new ArrayList<>();
 
@@ -97,7 +104,7 @@ public class LandingPageServiceImpl implements LandingPageService {
             List<Content> creatorContents = contentRepository.findByCreatorId(creator.getId());
             int publishedCount = creatorContents.size();
 
-            BigDecimal avgRating = BigDecimal.valueOf(4.8); // Default fallback
+            BigDecimal avgRating = BigDecimal.valueOf(4.8);
             if (!creatorContents.isEmpty()) {
                 double avg = creatorContents.stream()
                         .mapToDouble(c -> c.getRating() != null ? c.getRating().doubleValue() : 4.5)
@@ -121,7 +128,6 @@ public class LandingPageServiceImpl implements LandingPageService {
         return creatorResponses;
     }
 
-    // Helper mapper: Content entity -> ContentSummaryResponse DTO
     private ContentSummaryResponse mapToContentSummary(Content content) {
         ContentSummaryResponse dto = new ContentSummaryResponse();
         dto.setId(content.getId());

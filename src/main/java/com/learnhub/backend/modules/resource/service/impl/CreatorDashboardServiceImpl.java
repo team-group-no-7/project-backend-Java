@@ -5,39 +5,32 @@ import com.learnhub.backend.modules.resource.repository.ContentRepository;
 import com.learnhub.backend.modules.resource.service.CreatorDashboardService;
 import com.learnhub.backend.common.exception.ResourceNotFoundException;
 import com.learnhub.backend.modules.user.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
- * CreatorDashboardServiceImpl — Implementation class for calculating creator analytics.
- *
- * Implemented in pure Java with explicit constructor dependency injection (no Lombok).
+ * CreatorDashboardServiceImpl — Implementation class for calculating creator analytics with SLF4J logging.
  */
 @Service
 public class CreatorDashboardServiceImpl implements CreatorDashboardService {
 
+    private static final Logger log = LoggerFactory.getLogger(CreatorDashboardServiceImpl.class);
+
     private final UserRepository userRepository;
     private final ContentRepository contentRepository;
 
-    // Explicit constructor for dependency injection
     public CreatorDashboardServiceImpl(UserRepository userRepository, ContentRepository contentRepository) {
         this.userRepository = userRepository;
         this.contentRepository = contentRepository;
     }
 
-    /**
-     * Fetch aggregated dashboard statistics for a creator.
-     *
-     * @param creatorId the user ID of the creator
-     * @return CreatorDashboardStatsDto containing totalResources, totalLearners, and totalEarnings
-     * @throws ResourceNotFoundException if creator ID does not exist in database
-     */
     @Override
     public CreatorDashboardStatsDto getDashboardStats(Long creatorId) {
-        // Step 1: Verify creator exists
+        log.info("Calculating creator dashboard analytics for creator ID: {}", creatorId);
         userRepository.findById(creatorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Creator not found with id: " + creatorId));
 
-        // Step 2: Query analytics from contentRepository
         long totalResources = contentRepository.countByCreatorId(creatorId);
         long totalLearners = contentRepository.sumLearnersCountByCreatorId(creatorId);
         Double totalEarnings = contentRepository.calculateTotalEarningsByCreatorId(creatorId);
@@ -46,7 +39,7 @@ public class CreatorDashboardServiceImpl implements CreatorDashboardService {
             totalEarnings = 0.0;
         }
 
-        // Step 3: Return DTO
+        log.info("Creator ID: {} stats — Resources: {}, Learners: {}, Earnings: ₹{}", creatorId, totalResources, totalLearners, totalEarnings);
         return new CreatorDashboardStatsDto(totalResources, totalLearners, totalEarnings);
     }
 }

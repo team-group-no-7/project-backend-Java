@@ -10,6 +10,8 @@ import com.learnhub.backend.common.exception.ResourceNotFoundException;
 import com.learnhub.backend.modules.resource.service.ResourceDetailService;
 import com.learnhub.backend.modules.user.entity.User;
 import com.learnhub.backend.modules.user.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,18 +21,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * ResourceDetailServiceImpl — Implementation of ResourceDetailService.
- * Implemented in pure Java with explicit constructor dependency injection.
+ * ResourceDetailServiceImpl — Implementation of ResourceDetailService with SLF4J logging.
  */
 @Service
 @Transactional(readOnly = true)
 public class ResourceDetailServiceImpl implements ResourceDetailService {
 
+    private static final Logger log = LoggerFactory.getLogger(ResourceDetailServiceImpl.class);
+
     private final ContentRepository contentRepository;
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
 
-    // Explicit constructor dependency injection (No Lombok)
     public ResourceDetailServiceImpl(ContentRepository contentRepository,
                                      ReviewRepository reviewRepository,
                                      UserRepository userRepository) {
@@ -41,6 +43,7 @@ public class ResourceDetailServiceImpl implements ResourceDetailService {
 
     @Override
     public ResourceDetailResponse getResourceDetails(Long id) {
+        log.info("Fetching public resource page details for content ID: {}", id);
         Content content = contentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Resource not found with id: " + id));
 
@@ -55,7 +58,6 @@ public class ResourceDetailServiceImpl implements ResourceDetailService {
         response.setType(content.getType() != null ? content.getType() : "Notes & Code");
         response.setLevel(content.getLevel() != null ? content.getLevel() : "Intermediate");
 
-        // Parse tags
         if (content.getTags() != null && !content.getTags().trim().isEmpty()) {
             List<String> tagList = Arrays.stream(content.getTags().split(","))
                     .map(String::trim)
@@ -71,7 +73,6 @@ public class ResourceDetailServiceImpl implements ResourceDetailService {
         response.setLearnersCount(content.getLearnersCount() != null ? content.getLearnersCount() : 0);
         response.setCreatedAt(content.getCreatedAt() != null ? content.getCreatedAt().toString() : "2026-06-10");
 
-        // Category mapping
         if (content.getCategory() != null) {
             response.setCategoryId(content.getCategory().getId());
             response.setCategoryName(content.getCategory().getName());
@@ -79,7 +80,6 @@ public class ResourceDetailServiceImpl implements ResourceDetailService {
             response.setCategoryName("General");
         }
 
-        // Creator mapping
         if (content.getCreatorId() != null) {
             response.setCreatorId(content.getCreatorId());
             User creator = userRepository.findById(content.getCreatorId()).orElse(null);
@@ -95,7 +95,6 @@ public class ResourceDetailServiceImpl implements ResourceDetailService {
             response.setCreatorAvatar("https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150");
         }
 
-        // Fetch reviews
         List<Review> dbReviews = reviewRepository.findByContentId(id);
         List<ReviewDto> reviewDtos = new ArrayList<>();
 
@@ -105,7 +104,6 @@ public class ResourceDetailServiceImpl implements ResourceDetailService {
                             r.getRating(), r.getReviewText(), r.getReviewDate()))
                     .collect(Collectors.toList());
         } else {
-            // Default sample reviews for rich UX
             reviewDtos.add(new ReviewDto(1L, "Aarav Sharma", "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100",
                     5, "Exceptionally clear explanation of Spring Boot architecture and PostgreSQL indexing!", "2026-07-15"));
             reviewDtos.add(new ReviewDto(2L, "Priya Patel", "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100",

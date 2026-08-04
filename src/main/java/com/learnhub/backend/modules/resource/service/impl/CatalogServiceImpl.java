@@ -1,5 +1,6 @@
 package com.learnhub.backend.modules.resource.service.impl;
 
+import com.learnhub.backend.common.exception.ResourceNotFoundException;
 import com.learnhub.backend.modules.resource.dto.ContentRequest;
 import com.learnhub.backend.modules.resource.dto.ContentResponse;
 import com.learnhub.backend.modules.resource.entity.Category;
@@ -7,25 +8,36 @@ import com.learnhub.backend.modules.resource.entity.Content;
 import com.learnhub.backend.modules.resource.repository.CategoryRepository;
 import com.learnhub.backend.modules.resource.repository.ContentRepository;
 import com.learnhub.backend.modules.resource.service.CatalogService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * CatalogServiceImpl — Implementation class for Resource Catalog browsing and operations.
+ * Refactored with explicit constructor injection, custom exceptions, and SLF4J logging.
+ */
 @Service
 @Transactional
 public class CatalogServiceImpl implements CatalogService {
 
-    @Autowired
-    private ContentRepository contentRepository;
+    private static final Logger log = LoggerFactory.getLogger(CatalogServiceImpl.class);
 
-    @Autowired
-    private CategoryRepository categoryRepository;
+    private final ContentRepository contentRepository;
+    private final CategoryRepository categoryRepository;
+
+    public CatalogServiceImpl(ContentRepository contentRepository, CategoryRepository categoryRepository) {
+        this.contentRepository = contentRepository;
+        this.categoryRepository = categoryRepository;
+    }
 
     @Override
     @Transactional(readOnly = true)
     public List<ContentResponse> getCatalog(String search, String category) {
+        log.info("Fetching catalog with search: '{}', category: '{}'", search, category);
         List<Content> contents = contentRepository.searchAndFilter(search, category);
         return contents.stream().map(this::mapToResponse).collect(Collectors.toList());
     }
@@ -33,13 +45,15 @@ public class CatalogServiceImpl implements CatalogService {
     @Override
     @Transactional(readOnly = true)
     public ContentResponse getContentById(Long id) {
+        log.info("Fetching content details for content ID: {}", id);
         Content content = contentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Content not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Content not found with id: " + id));
         return mapToResponse(content);
     }
 
     @Override
     public ContentResponse uploadContent(ContentRequest request) {
+        log.info("Uploading content title: '{}'", request.getTitle());
         Content content = new Content();
         content.setTitle(request.getTitle());
         content.setDescription(request.getDescription());
@@ -52,7 +66,6 @@ public class CatalogServiceImpl implements CatalogService {
         content.setTags(request.getTags());
         content.setCreatorId(request.getCreatorId());
 
-        // Find or create Category
         Category category = categoryRepository.findByName(request.getCategoryName())
                 .orElseGet(() -> {
                     Category newCat = new Category();
@@ -62,37 +75,38 @@ public class CatalogServiceImpl implements CatalogService {
                 });
 
         content.setCategory(category);
-        
-        // Increment the category's resource counter
-        category.setResourceCount(category.getResourceCount() + 1);
+        category.setResourceCount((category.getResourceCount() != null ? category.getResourceCount() : 0) + 1);
         categoryRepository.save(category);
 
         Content savedContent = contentRepository.save(content);
+        log.info("Successfully uploaded content ID: {}", savedContent.getId());
         return mapToResponse(savedContent);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<ContentResponse> getContentsByCreator(Long creatorId) {
+        log.info("Fetching contents for creator ID: {}", creatorId);
         List<Content> contents = contentRepository.findByCreatorId(creatorId);
         return contents.stream().map(this::mapToResponse).collect(Collectors.toList());
     }
 
     @Override
     public void deleteContent(Long id) {
+        log.info("Deleting content ID: {}", id);
         Content content = contentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Content not found with id: " + id));
-        
+                .orElseThrow(() -> new ResourceNotFoundException("Content not found with id: " + id));
+
         Category category = content.getCategory();
-        if (category != null && category.getResourceCount() > 0) {
+        if (category != null && category.getResourceCount() != null && category.getResourceCount() > 0) {
             category.setResourceCount(category.getResourceCount() - 1);
             categoryRepository.save(category);
         }
-        
+
         contentRepository.delete(content);
+        log.info("Successfully deleted content ID: {}", id);
     }
 
-    // Helper mapper method
     private ContentResponse mapToResponse(Content content) {
         ContentResponse response = new ContentResponse();
         response.setId(content.getId());
@@ -113,7 +127,7 @@ public class CatalogServiceImpl implements CatalogService {
         response.setApprovalStatus(content.getApprovalStatus());
         response.setCreatorId(content.getCreatorId());
         response.setCreatedAt(content.getCreatedAt());
-        
+
         if (content.getCategory() != null) {
             response.setCategoryName(content.getCategory().getName());
         }
@@ -124,13 +138,14 @@ public class CatalogServiceImpl implements CatalogService {
         } else {
             response.setCreatorName("Unknown");
         }
-        
+
         return response;
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<ContentResponse> getFeaturedContents() {
+        log.info("Fetching featured contents");
         List<Content> contents = contentRepository.findAll();
         List<Content> featured = contents.stream().filter(Content::isFeatured).collect(Collectors.toList());
         if (featured.isEmpty()) {
@@ -142,6 +157,7 @@ public class CatalogServiceImpl implements CatalogService {
     @Override
     @Transactional(readOnly = true)
     public List<Category> getAllCategories() {
+        log.info("Fetching all categories");
         return categoryRepository.findAll();
     }
 }

@@ -1,6 +1,7 @@
 package com.learnhub.backend.modules.resource.service.impl;
 
 import com.learnhub.backend.common.dto.PlatformStatsResponse;
+import com.learnhub.backend.common.exception.ResourceNotFoundException;
 import com.learnhub.backend.modules.resource.dto.ContentResponse;
 import com.learnhub.backend.modules.resource.dto.response.ContentReaderResponse;
 import com.learnhub.backend.modules.resource.dto.response.CatalogResponse;
@@ -9,6 +10,8 @@ import com.learnhub.backend.modules.resource.enums.ApprovalStatus;
 import com.learnhub.backend.modules.resource.repository.ContentRepository;
 import com.learnhub.backend.modules.resource.service.ContentService;
 import com.learnhub.backend.modules.user.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,16 +20,16 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * ContentServiceImpl — Implementation class for Catalog Browsing & Moderation Service.
- * Implemented in pure Java with explicit constructor injection (no Lombok).
+ * ContentServiceImpl — Implementation class for Catalog Browsing & Moderation Service with SLF4J logging.
  */
 @Service
 public class ContentServiceImpl implements ContentService {
 
+    private static final Logger log = LoggerFactory.getLogger(ContentServiceImpl.class);
+
     private final ContentRepository contentRepository;
     private final UserRepository userRepository;
 
-    // Explicit Constructor for Dependency Injection
     public ContentServiceImpl(ContentRepository contentRepository, UserRepository userRepository) {
         this.contentRepository = contentRepository;
         this.userRepository = userRepository;
@@ -46,7 +49,7 @@ public class ContentServiceImpl implements ContentService {
                 typeName,
                 categoryName,
                 content.getPrice(),
-                content.getFileUrl(), // Using fileUrl as thumbnail fallback
+                content.getFileUrl(),
                 creatorName,
                 creatorAvatar,
                 creatorId,
@@ -60,8 +63,9 @@ public class ContentServiceImpl implements ContentService {
 
     @Override
     public ContentReaderResponse getContent(Long contentId) {
+        log.info("Fetching content reader view for ID: {}", contentId);
         Content content = contentRepository.findById(contentId)
-                .orElseThrow(() -> new RuntimeException("Content not found with id: " + contentId));
+                .orElseThrow(() -> new ResourceNotFoundException("Content not found with id: " + contentId));
 
         String categoryName = content.getCategory() != null ? content.getCategory().getName() : "General";
         String typeName = content.getType() != null ? content.getType() : "ARTICLE";
@@ -80,6 +84,7 @@ public class ContentServiceImpl implements ContentService {
 
     @Override
     public List<CatalogResponse> getAllContents() {
+        log.info("Fetching all catalog contents");
         return contentRepository.findAll()
                 .stream()
                 .map(this::mapToCatalog)
@@ -88,6 +93,7 @@ public class ContentServiceImpl implements ContentService {
 
     @Override
     public List<CatalogResponse> search(String keyword) {
+        log.info("Searching catalog with keyword: '{}'", keyword);
         return contentRepository.findByTitleContainingIgnoreCase(keyword)
                 .stream()
                 .map(this::mapToCatalog)
@@ -96,16 +102,17 @@ public class ContentServiceImpl implements ContentService {
 
     @Override
     public List<CatalogResponse> getByCategory(Long categoryId) {
+        log.info("Fetching catalog for category ID: {}", categoryId);
         return contentRepository.findByCategoryId(categoryId)
                 .stream()
                 .map(this::mapToCatalog)
                 .collect(Collectors.toList());
     }
 
-    // Admin & Moderation Implementations with Typed ApprovalStatus Enum
     @Override
     @Transactional(readOnly = true)
     public PlatformStatsResponse getPlatformStats() {
+        log.info("Computing platform analytics statistics");
         PlatformStatsResponse stats = new PlatformStatsResponse();
         stats.setTotalUsers(userRepository.count());
         stats.setTotalContents(contentRepository.count());
@@ -116,6 +123,7 @@ public class ContentServiceImpl implements ContentService {
     @Override
     @Transactional(readOnly = true)
     public List<ContentResponse> getAllContentResponses() {
+        log.info("Fetching all content responses for admin moderation");
         return contentRepository.findAll()
                 .stream()
                 .map(this::mapToContentResponse)
@@ -137,11 +145,13 @@ public class ContentServiceImpl implements ContentService {
     @Override
     @Transactional
     public ContentResponse updateApprovalStatus(Long contentId, ApprovalStatus status) {
+        log.info("Updating content ID: {} approval status to {}", contentId, status);
         Content content = contentRepository.findById(contentId)
-                .orElseThrow(() -> new RuntimeException("Content not found with id: " + contentId));
+                .orElseThrow(() -> new ResourceNotFoundException("Content not found with id: " + contentId));
 
         content.setApprovalStatus(status.name());
         Content savedContent = contentRepository.save(content);
+        log.info("Successfully updated content ID: {} approval status to {}", savedContent.getId(), status);
         return mapToContentResponse(savedContent);
     }
 

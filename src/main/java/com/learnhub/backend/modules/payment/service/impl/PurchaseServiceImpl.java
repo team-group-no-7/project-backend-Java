@@ -9,6 +9,8 @@ import com.learnhub.backend.modules.payment.service.PurchaseService;
 import com.learnhub.backend.common.util.SecurityUtils;
 import com.learnhub.backend.modules.resource.repository.ContentRepository;
 import com.learnhub.backend.modules.user.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,17 +18,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * PurchaseServiceImpl — Implementation class for Billing & Purchase Service.
- * Implemented in pure Java with explicit constructor injection (no Lombok).
+ * PurchaseServiceImpl — Implementation class for Billing & Purchase Service with SLF4J logging.
  */
 @Service
 public class PurchaseServiceImpl implements PurchaseService {
+
+    private static final Logger log = LoggerFactory.getLogger(PurchaseServiceImpl.class);
 
     private final PurchaseRepository purchaseRepository;
     private final ContentRepository contentRepository;
     private final UserRepository userRepository;
 
-    // Explicit Constructor Injection
     public PurchaseServiceImpl(PurchaseRepository purchaseRepository, ContentRepository contentRepository, UserRepository userRepository) {
         this.purchaseRepository = purchaseRepository;
         this.contentRepository = contentRepository;
@@ -36,6 +38,7 @@ public class PurchaseServiceImpl implements PurchaseService {
     @Override
     @Transactional(readOnly = true)
     public List<PurchaseResponse> getPurchaseHistory(Long userId) {
+        log.info("Fetching purchase history ledger for user ID: {}", userId);
         SecurityUtils.validateOwnershipByUserId(userId, userRepository);
         return purchaseRepository.findByUserIdOrderByPurchasedAtDesc(userId)
                 .stream()
@@ -46,13 +49,12 @@ public class PurchaseServiceImpl implements PurchaseService {
     @Override
     @Transactional(readOnly = true)
     public List<LibraryResponse> getMyLibrary(Long userId) {
+        log.info("Fetching unlocked content library for user ID: {}", userId);
         SecurityUtils.validateOwnershipByUserId(userId, userRepository);
-        // Use simple findByUserId to avoid JOIN FETCH issues with null content entities
         return purchaseRepository.findByUserId(userId)
                 .stream()
                 .filter(p -> "SUCCESS".equals(p.getPaymentStatus()))
                 .map(purchase -> {
-                    // Prefer entity join, fall back to loading by contentId
                     Content content = purchase.getContent();
                     if (content == null && purchase.getContentId() != null) {
                         content = contentRepository.findById(purchase.getContentId()).orElse(null);
