@@ -1,6 +1,7 @@
 package com.learnhub.backend.modules.user.service.impl;
 
 import com.learnhub.backend.common.exception.ResourceNotFoundException;
+import com.learnhub.backend.common.util.SecurityUtils;
 import com.learnhub.backend.modules.user.entity.User;
 import com.learnhub.backend.modules.user.repository.UserRepository;
 import com.learnhub.backend.modules.user.dto.UpdateProfileRequest;
@@ -27,7 +28,7 @@ public class ProfileServiceImpl implements ProfileService {
     public ProfileResponse getProfile(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
-
+        SecurityUtils.validateOwnership(user.getEmail());
         return map(user);
     }
 
@@ -36,6 +37,7 @@ public class ProfileServiceImpl implements ProfileService {
     public ProfileResponse updateProfile(Long userId, UpdateProfileRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+        SecurityUtils.validateOwnership(user.getEmail());
 
         user.setName(request.getName());
         user.setHeadline(request.getHeadline());

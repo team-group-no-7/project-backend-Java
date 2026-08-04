@@ -51,29 +51,19 @@ public class SecurityConfig {
                 // PUBLIC ENDPOINTS — No JWT token required
                 .requestMatchers("/api/auth/**").permitAll()
 
-
                 // Status check endpoints
                 .requestMatchers("/api/users/status").permitAll()
                 .requestMatchers("/api/creators/status").permitAll()
                 .requestMatchers("/api/creator/content/status").permitAll()
                 .requestMatchers("/api/catalog/status").permitAll()
-                .requestMatchers("/api/billing/status").permitAll()
-                .requestMatchers("/api/mentorship/status").permitAll()
-                .requestMatchers("/api/discussion/status").permitAll()
 
-                // Public content, payment, purchases, sessions, admin and file endpoints
+                // Public content, creator profile, landing page, and file endpoints
                 .requestMatchers("/api/public/**").permitAll()
-                .requestMatchers("/api/payment/**").authenticated()
-                .requestMatchers("/api/billing/**").authenticated()
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/creators/{id}").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/creators/{id}/contents").permitAll()
                 .requestMatchers("/api/contents/**").permitAll()
                 .requestMatchers("/api/contents").permitAll()
                 .requestMatchers("/api/categories").permitAll()
-                .requestMatchers("/api/creators/**").hasRole("CREATOR")
-                .requestMatchers("/api/purchases/**").authenticated()
-                .requestMatchers("/api/sessions/**").authenticated()
-                .requestMatchers("/api/creator/content/**").hasRole("CREATOR")
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                .requestMatchers("/api/qa/**").authenticated()
                 .requestMatchers("/uploads/**").permitAll()
 
                 // Swagger/OpenAPI
@@ -83,7 +73,16 @@ public class SecurityConfig {
                         "/swagger-ui.html"
                 ).permitAll()
 
+                // ROLE-PROTECTED ENDPOINTS
+                .requestMatchers("/api/creators/**").hasRole("CREATOR")
+                .requestMatchers("/api/creator/content/**").hasRole("CREATOR")
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
                 // PROTECTED ENDPOINTS — JWT token required for everything else
+                .requestMatchers("/api/payment/**").authenticated()
+                .requestMatchers("/api/purchases/**").authenticated()
+                .requestMatchers("/api/sessions/**").authenticated()
+                .requestMatchers("/api/qa/**").authenticated()
                 .anyRequest().authenticated()
             )
 

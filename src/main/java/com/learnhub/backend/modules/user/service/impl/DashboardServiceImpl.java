@@ -1,9 +1,11 @@
 package com.learnhub.backend.modules.user.service.impl;
 
+import com.learnhub.backend.common.util.SecurityUtils;
 import com.learnhub.backend.modules.payment.entity.Purchase;
 import com.learnhub.backend.modules.payment.repository.PurchaseRepository;
 import com.learnhub.backend.modules.user.dto.response.ContinueLearningResponse;
 import com.learnhub.backend.modules.user.dto.response.DashboardResponse;
+import com.learnhub.backend.modules.user.repository.UserRepository;
 import com.learnhub.backend.modules.user.service.DashboardService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,14 +22,17 @@ import java.util.stream.Collectors;
 public class DashboardServiceImpl implements DashboardService {
 
     private final PurchaseRepository purchaseRepository;
+    private final UserRepository userRepository;
 
-    public DashboardServiceImpl(PurchaseRepository purchaseRepository) {
+    public DashboardServiceImpl(PurchaseRepository purchaseRepository, UserRepository userRepository) {
         this.purchaseRepository = purchaseRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
     @Transactional(readOnly = true)
     public DashboardResponse getDashboard(Long userId) {
+        SecurityUtils.validateOwnershipByUserId(userId, userRepository);
         List<Purchase> purchases = purchaseRepository.findLibraryByUserId(userId);
 
         BigDecimal investment = purchaseRepository.totalInvestment(userId);

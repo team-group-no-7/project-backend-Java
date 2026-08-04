@@ -8,6 +8,7 @@ import com.learnhub.backend.modules.payment.entity.Purchase;
 import com.learnhub.backend.modules.payment.service.RazorpayService;
 import com.learnhub.backend.common.dto.ApiResponse;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +24,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/payment")
+@PreAuthorize("isAuthenticated()")
 public class PaymentController {
 
     private final RazorpayService razorpayService;
@@ -55,11 +57,23 @@ public class PaymentController {
 
     /**
      * GET /api/payment/purchases/{userId}
-     * Returns purchase history for a specific user.
+     * Returns purchase history DTOs for a specific user.
      */
     @GetMapping("/purchases/{userId}")
-    public ResponseEntity<ApiResponse<List<Purchase>>> getUserPurchases(@PathVariable Long userId) {
+    public ResponseEntity<ApiResponse<List<com.learnhub.backend.modules.payment.dto.response.PurchaseResponse>>> getUserPurchases(@PathVariable Long userId) {
         List<Purchase> purchases = razorpayService.getPurchasesForUser(userId);
-        return ResponseEntity.ok(ApiResponse.success("User purchases retrieved successfully", purchases));
+        List<com.learnhub.backend.modules.payment.dto.response.PurchaseResponse> responseList = purchases.stream()
+                .map(p -> new com.learnhub.backend.modules.payment.dto.response.PurchaseResponse(
+                        p.getId(),
+                        p.getContent() != null ? p.getContent().getId() : null,
+                        p.getContent() != null ? p.getContent().getTitle() : "Learning Resource",
+                        p.getContent() != null && p.getContent().getCategory() != null ? p.getContent().getCategory().getName() : "General",
+                        p.getAmountPaid(),
+                        p.getPaymentStatus() != null ? p.getPaymentStatus() : "SUCCESS",
+                        p.getPurchasedAt()
+                ))
+                .collect(java.util.stream.Collectors.toList());
+
+        return ResponseEntity.ok(ApiResponse.success("User purchases retrieved successfully", responseList));
     }
 }

@@ -55,6 +55,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // Step 5: Extract user details from the token
             String email = jwtUtil.extractEmail(token);
             String role = jwtUtil.extractRole(token);
+            Long userId = jwtUtil.extractUserId(token);
 
             // Parse single or comma-separated roles into GrantedAuthority list
             List<GrantedAuthority> authorities = Arrays.stream(role.split(","))
@@ -68,6 +69,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             null,
                             authorities
                     );
+
+            // Store userId in authentication details for ownership validation
+            authentication.setDetails(userId);
 
             // Step 7: Set the authentication in Spring Security's context
             SecurityContextHolder.getContext().setAuthentication(authentication);

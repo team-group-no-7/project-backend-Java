@@ -30,16 +30,17 @@ public class JwtUtil {
         this.expirationMs = expirationMs;
     }
 
-    /*
-     * Generate a JWT token containing the user's email and role.
+    /**
+     * Generate a JWT token containing the user's email, role, and user ID.
      */
-    public String generateToken(String email, String role) {
+    public String generateToken(String email, String role, Long userId) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expirationMs);
 
         return Jwts.builder()
                 .subject(email)                    // WHO this token belongs to
                 .claim("role", role)               // WHAT role the user has
+                .claim("userId", userId)           // Database ID for ownership validation
                 .issuedAt(now)                     // WHEN the token was created
                 .expiration(expiryDate)            // WHEN the token expires
                 .signWith(secretKey)               // SIGN with our secret key
@@ -53,11 +54,23 @@ public class JwtUtil {
         return extractAllClaims(token).getSubject();
     }
 
-    /*
+    /**
      * Extract the role from a JWT token.
      */
     public String extractRole(String token) {
         return extractAllClaims(token).get("role", String.class);
+    }
+
+    /**
+     * Extract the user ID from a JWT token.
+     * Returns null for tokens issued before userId was added to claims.
+     */
+    public Long extractUserId(String token) {
+        Object userId = extractAllClaims(token).get("userId");
+        if (userId instanceof Number) {
+            return ((Number) userId).longValue();
+        }
+        return null;
     }
 
     /*

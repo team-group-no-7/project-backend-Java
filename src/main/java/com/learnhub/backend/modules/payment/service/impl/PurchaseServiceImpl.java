@@ -6,7 +6,9 @@ import com.learnhub.backend.modules.payment.entity.Purchase;
 import com.learnhub.backend.modules.resource.entity.Content;
 import com.learnhub.backend.modules.payment.repository.PurchaseRepository;
 import com.learnhub.backend.modules.payment.service.PurchaseService;
+import com.learnhub.backend.common.util.SecurityUtils;
 import com.learnhub.backend.modules.resource.repository.ContentRepository;
+import com.learnhub.backend.modules.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,16 +24,19 @@ public class PurchaseServiceImpl implements PurchaseService {
 
     private final PurchaseRepository purchaseRepository;
     private final ContentRepository contentRepository;
+    private final UserRepository userRepository;
 
     // Explicit Constructor Injection
-    public PurchaseServiceImpl(PurchaseRepository purchaseRepository, ContentRepository contentRepository) {
+    public PurchaseServiceImpl(PurchaseRepository purchaseRepository, ContentRepository contentRepository, UserRepository userRepository) {
         this.purchaseRepository = purchaseRepository;
         this.contentRepository = contentRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<PurchaseResponse> getPurchaseHistory(Long userId) {
+        SecurityUtils.validateOwnershipByUserId(userId, userRepository);
         return purchaseRepository.findByUserIdOrderByPurchasedAtDesc(userId)
                 .stream()
                 .map(this::mapToDto)
@@ -41,6 +46,7 @@ public class PurchaseServiceImpl implements PurchaseService {
     @Override
     @Transactional(readOnly = true)
     public List<LibraryResponse> getMyLibrary(Long userId) {
+        SecurityUtils.validateOwnershipByUserId(userId, userRepository);
         // Use simple findByUserId to avoid JOIN FETCH issues with null content entities
         return purchaseRepository.findByUserId(userId)
                 .stream()

@@ -7,6 +7,7 @@ import com.learnhub.backend.modules.user.entity.User;
 import com.learnhub.backend.modules.user.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/users")
+@PreAuthorize("isAuthenticated()")
 public class UserController {
 
     private final UserService userService;
@@ -31,6 +33,7 @@ public class UserController {
      * Health check for User module.
      */
     @GetMapping("/status")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<ApiResponse<String>> getStatus() {
         return ResponseEntity.ok(ApiResponse.success("User Profile Module is Active", "OK"));
     }
@@ -40,6 +43,7 @@ public class UserController {
      * Fetch all users in the system.
      */
     @GetMapping("/all")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<List<User>>> getAllUsers() {
         return ResponseEntity.ok(ApiResponse.success("Users fetched successfully", userService.getAllUsers()));
     }

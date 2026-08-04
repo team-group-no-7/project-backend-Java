@@ -1,7 +1,9 @@
 package com.learnhub.backend.modules.user.controller;
 
+import com.learnhub.backend.common.dto.ApiResponse;
 import com.learnhub.backend.modules.user.dto.AdminUserResponse;
 import com.learnhub.backend.modules.user.service.UserService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -12,6 +14,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/admin")
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminUserController {
 
     private final UserService userService;
@@ -22,16 +25,16 @@ public class AdminUserController {
 
     // GET /api/admin/users - Search and list users
     @GetMapping("/users")
-    public ResponseEntity<List<AdminUserResponse>> searchUsers(
+    public ResponseEntity<ApiResponse<List<AdminUserResponse>>> searchUsers(
             @RequestParam(value = "search", required = false) String search) {
         List<AdminUserResponse> users = userService.searchUsers(search);
-        return ResponseEntity.ok(users);
+        return ResponseEntity.ok(ApiResponse.success("Admin users list retrieved successfully", users));
     }
 
     // POST /api/admin/users/{id}/freeze & PATCH /api/admin/users/{id}/status - Toggle user freeze state (Active <-> Frozen)
     @RequestMapping(value = {"/users/{id}/freeze", "/users/{id}/status"}, method = {RequestMethod.POST, RequestMethod.PATCH})
-    public ResponseEntity<AdminUserResponse> toggleUserFreeze(@PathVariable("id") Long id) {
+    public ResponseEntity<ApiResponse<AdminUserResponse>> toggleUserFreeze(@PathVariable("id") Long id) {
         AdminUserResponse updatedUser = userService.toggleUserFreeze(id);
-        return ResponseEntity.ok(updatedUser);
+        return ResponseEntity.ok(ApiResponse.success("User freeze status updated successfully", updatedUser));
     }
 }

@@ -1,12 +1,15 @@
 package com.learnhub.backend.modules.user.service.impl;
 
 import com.learnhub.backend.common.exception.ResourceNotFoundException;
+import com.learnhub.backend.common.util.SecurityUtils;
 import com.learnhub.backend.modules.user.dto.AdminUserResponse;
 import com.learnhub.backend.modules.user.dto.UpdateProfileRequest;
 import com.learnhub.backend.modules.user.dto.UserProfileResponse;
 import com.learnhub.backend.modules.user.entity.User;
 import com.learnhub.backend.modules.user.repository.UserRepository;
 import com.learnhub.backend.modules.user.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,30 +17,30 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-/*
- * UserServiceImpl — Implementation class for User Profile & User Management.
+/**
+ * UserServiceImpl — Implementation class for User Profile & User Management with SLF4J logging.
  */
 @Service
 public class UserServiceImpl implements UserService {
 
+    private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
+
     private final UserRepository userRepository;
 
-    // Explicit constructor for dependency injection
     public UserServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
-    /*
-     * Get all users in the system.
-     */
     @Override
     public List<User> getAllUsers() {
+        log.info("Fetching all users in the system");
         return userRepository.findAll();
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<AdminUserResponse> searchUsers(String search) {
+        log.info("Searching admin users with filter: '{}'", search);
         List<User> users = userRepository.searchUsers(search);
         return users.stream().map(this::mapToAdminUserResponse).collect(Collectors.toList());
     }
@@ -45,10 +48,10 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public AdminUserResponse toggleUserFreeze(Long userId) {
+        log.info("Toggling user freeze status for user ID: {}", userId);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
-        // Toggle ACTIVE <-> FROZEN
         if ("FROZEN".equalsIgnoreCase(user.getStatus()) || "SUSPENDED".equalsIgnoreCase(user.getStatus())) {
             user.setStatus("ACTIVE");
         } else {
@@ -56,6 +59,7 @@ public class UserServiceImpl implements UserService {
         }
 
         User savedUser = userRepository.saveAndFlush(user);
+        log.info("Successfully updated user ID: {} status to: {}", savedUser.getId(), savedUser.getStatus());
         return mapToAdminUserResponse(savedUser);
     }
 
@@ -70,43 +74,33 @@ public class UserServiceImpl implements UserService {
         return response;
     }
 
-    /*
-     * Get user by ID.
-     */
     @Override
     public Optional<User> getUserById(Long id) {
         return userRepository.findById(id);
     }
 
-    /*
-     * Get user by email.
-     */
     @Override
     public Optional<User> getUserByEmail(String email) {
         return userRepository.findByEmail(email);
     }
 
-    /*
-     * Fetch user profile by ID.
-     */
     @Override
     public UserProfileResponse getUserProfile(Long userId) {
+        log.info("Fetching user profile for user ID: {}", userId);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+        SecurityUtils.validateOwnership(user.getEmail());
         return mapToProfileResponse(user);
     }
 
-    /*
-     * Update user profile information.
-     * Updates name, headline, location, and avatarUrl.
-     */
     @Override
     @Transactional
     public UserProfileResponse updateUserProfile(Long userId, UpdateProfileRequest request) {
+        log.info("Updating user profile for user ID: {}", userId);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+        SecurityUtils.validateOwnership(user.getEmail());
 
-        // Update fields if provided
         if (request.getName() != null && !request.getName().trim().isEmpty()) {
             user.setName(request.getName());
         }
@@ -121,18 +115,17 @@ public class UserServiceImpl implements UserService {
         }
 
         User updatedUser = userRepository.save(user);
+        log.info("Successfully updated user profile for user ID: {}", updatedUser.getId());
         return mapToProfileResponse(updatedUser);
     }
 
-    /*
-     * Upgrade a user to CREATOR role while retaining existing roles (e.g. "LEARNER,CREATOR").
-     * Updates PostgreSQL database column `role` to preserve both LEARNER and CREATOR access.
-     */
     @Override
     @Transactional
     public UserProfileResponse becomeCreator(Long userId) {
+        log.info("Upgrading user ID: {} to CREATOR role", userId);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+        SecurityUtils.validateOwnership(user.getEmail());
 
         String currentRole = user.getRole();
         if (currentRole == null || currentRole.trim().isEmpty()) {
@@ -142,12 +135,10 @@ public class UserServiceImpl implements UserService {
         }
 
         User updatedUser = userRepository.save(user);
+        log.info("Successfully upgraded user ID: {} to roles: {}", updatedUser.getId(), updatedUser.getRole());
         return mapToProfileResponse(updatedUser);
     }
 
-    /*
-     * Helper method to map User entity to UserProfileResponse DTO.
-     */
     private UserProfileResponse mapToProfileResponse(User user) {
         return new UserProfileResponse(
                 user.getId(),

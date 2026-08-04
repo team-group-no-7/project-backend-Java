@@ -13,6 +13,8 @@ import com.learnhub.backend.modules.user.entity.User;
 import com.learnhub.backend.modules.user.repository.UserRepository;
 import com.learnhub.backend.common.exception.BadRequestException;
 import com.learnhub.backend.common.exception.ResourceNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,13 +28,13 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * RazorpayServiceImpl — Implementation of Razorpay Service.
- * Implemented in pure Java with explicit constructor dependency injection.
- * Supports Razorpay API order creation and HMAC-SHA256 signature verification.
+ * RazorpayServiceImpl — Implementation of Razorpay Service with SLF4J logging.
  */
 @Service
 @Transactional
 public class RazorpayServiceImpl implements RazorpayService {
+
+    private static final Logger log = LoggerFactory.getLogger(RazorpayServiceImpl.class);
 
     private final PurchaseRepository purchaseRepository;
     private final ContentRepository contentRepository;
@@ -44,7 +46,6 @@ public class RazorpayServiceImpl implements RazorpayService {
     @Value("${razorpay.key.secret:learnhub_secret_key_456}")
     private String keySecret;
 
-    // Explicit constructor dependency injection (No Lombok)
     public RazorpayServiceImpl(PurchaseRepository purchaseRepository, ContentRepository contentRepository, UserRepository userRepository) {
         this.purchaseRepository = purchaseRepository;
         this.contentRepository = contentRepository;
@@ -53,18 +54,17 @@ public class RazorpayServiceImpl implements RazorpayService {
 
     @Override
     public OrderResponseDto createOrder(OrderRequestDto request) {
+        log.info("Creating Razorpay checkout order for content ID: {}", request.getContentId());
         Content content = contentRepository.findById(request.getContentId())
                 .orElseThrow(() -> new ResourceNotFoundException("Content not found with id: " + request.getContentId()));
 
-        Long userId = request.getUserId() != null ? request.getUserId() : 101L; // Fallback to test user Arjun
+        Long userId = request.getUserId() != null ? request.getUserId() : 101L;
         BigDecimal amount = request.getAmount() != null ? request.getAmount() : content.getPrice();
 
-        // Unique transaction and order identifiers
         String randomHash = UUID.randomUUID().toString().substring(0, 8);
         String orderId = "order_lh_" + randomHash;
         String transactionId = "txn_lh_" + randomHash;
 
-        // Persist pending purchase ledger entry
         Purchase purchase = new Purchase();
         purchase.setUserId(userId);
         purchase.setContentId(content.getId());
@@ -73,6 +73,7 @@ public class RazorpayServiceImpl implements RazorpayService {
         purchase.setTransactionId(orderId);
 
         purchaseRepository.save(purchase);
+        log.info("Successfully created pending purchase order ID: {} for user ID: {}", orderId, userId);
 
         return new OrderResponseDto(
                 orderId,
@@ -87,28 +88,26 @@ public class RazorpayServiceImpl implements RazorpayService {
 
     @Override
     public PaymentVerificationResponseDto verifyPayment(PaymentVerificationRequestDto request) {
+        log.info("Verifying Razorpay payment for order ID: {}", request.getRazorpayOrderId());
         String orderId = request.getRazorpayOrderId();
         String paymentId = request.getRazorpayPaymentId();
         String signature = request.getRazorpaySignature();
 
-        // Verify Razorpay HMAC-SHA256 signature if provided
         if (signature != null && !signature.isBlank() && !signature.startsWith("mock_")) {
             boolean isValid = verifyRazorpaySignature(orderId, paymentId, signature, keySecret);
             if (!isValid) {
+                log.warn("Payment verification failed. Invalid Razorpay signature for order ID: {}", orderId);
                 throw new BadRequestException("Invalid Razorpay payment signature verification failed!");
             }
         }
 
-        // Retrieve purchase ledger entry
         Purchase purchase = purchaseRepository.findByTransactionId(orderId)
                 .orElseGet(() -> {
-                    // Create new purchase record if not pre-registered
                     Purchase newP = new Purchase();
                     Long uId = request.getUserId() != null ? request.getUserId() : 101L;
                     userRepository.findById(uId).ifPresent(newP::setUser);
                     newP.setUserId(uId);
 
-                    // Load and attach Content entity so JOIN FETCH works in library queries
                     Long cId = request.getContentId() != null ? request.getContentId() : 10L;
                     contentRepository.findById(cId).ifPresent(newP::setContent);
                     newP.setContentId(cId);
@@ -117,7 +116,6 @@ public class RazorpayServiceImpl implements RazorpayService {
                     return newP;
                 });
 
-        // Ensure user and content entity relations are attached
         if (purchase.getUser() == null) {
             Long uId = request.getUserId() != null ? request.getUserId() : 101L;
             User u = userRepository.findById(uId)
@@ -134,8 +132,8 @@ public class RazorpayServiceImpl implements RazorpayService {
         purchase.setPaymentStatus("SUCCESS");
         purchase.setTransactionId(paymentId != null ? paymentId : orderId);
         Purchase savedPurchase = purchaseRepository.save(purchase);
+        log.info("Payment verified and access unlocked for purchase ID: {}", savedPurchase.getId());
 
-        // Update learner count on Content entity
         contentRepository.findById(savedPurchase.getContentId()).ifPresent(content -> {
             content.setLearnersCount((content.getLearnersCount() != null ? content.getLearnersCount() : 0) + 1);
             contentRepository.save(content);
@@ -153,10 +151,10 @@ public class RazorpayServiceImpl implements RazorpayService {
     @Override
     @Transactional(readOnly = true)
     public List<Purchase> getPurchasesForUser(Long userId) {
+        log.info("Fetching purchase ledger for user ID: {}", userId);
         return purchaseRepository.findByUserId(userId);
     }
 
-    // Helper method for Razorpay HMAC-SHA256 Signature Verification
     private boolean verifyRazorpaySignature(String orderId, String paymentId, String signature, String secret) {
         try {
             String payload = orderId + "|" + paymentId;
@@ -167,6 +165,7 @@ public class RazorpayServiceImpl implements RazorpayService {
             String expectedSignature = HexFormat.of().formatHex(rawHmac);
             return expectedSignature.equalsIgnoreCase(signature);
         } catch (Exception e) {
+            log.error("Error verifying Razorpay HMAC signature: {}", e.getMessage(), e);
             return false;
         }
     }

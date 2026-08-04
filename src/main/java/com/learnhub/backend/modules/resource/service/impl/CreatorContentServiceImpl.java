@@ -10,8 +10,11 @@ import com.learnhub.backend.modules.resource.repository.ContentRepository;
 import com.learnhub.backend.modules.resource.service.CreatorContentService;
 import com.learnhub.backend.common.exception.BadRequestException;
 import com.learnhub.backend.common.exception.ResourceNotFoundException;
+import com.learnhub.backend.common.util.SecurityUtils;
 import com.learnhub.backend.modules.user.entity.User;
 import com.learnhub.backend.modules.user.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,20 +26,20 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/*
- * CreatorContentServiceImpl — Implementation class for Content Authoring Studio and Creator Resource Management Grid.
+/**
+ * CreatorContentServiceImpl — Implementation class for Content Authoring Studio and Creator Resource Management Grid with SLF4J logging.
  */
 @Service
 public class CreatorContentServiceImpl implements CreatorContentService {
+
+    private static final Logger log = LoggerFactory.getLogger(CreatorContentServiceImpl.class);
 
     private final ContentRepository contentRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
 
-    // Directory for storing uploaded PDF files locally
     private static final String UPLOAD_DIR = "uploads/pdfs/";
 
-    // Explicit constructor for dependency injection
     public CreatorContentServiceImpl(ContentRepository contentRepository,
                                      CategoryRepository categoryRepository,
                                      UserRepository userRepository) {
@@ -45,22 +48,17 @@ public class CreatorContentServiceImpl implements CreatorContentService {
         this.userRepository = userRepository;
     }
 
-    /*
-     * Publish Rich Text WYSIWYG Article or Generic Content Resource.
-     */
     @Override
     @Transactional
     public ContentResponse publishContent(CreateContentRequest request) {
+        log.info("Publishing new content resource with title: '{}'", request.getTitle());
 
-        // Step 1: Verify Creator exists, fall back to first available user or ID 101
         Long creatorId = request.getCreatorId() != null ? request.getCreatorId() : 101L;
         User creatorUser = userRepository.findById(creatorId)
                 .orElseGet(() -> userRepository.findAll().stream().findFirst().orElse(null));
 
-        // Step 2: Smart Category Resolution (by Name or by ID, with Auto-Creation)
         Category category = resolveCategory(request.getCategoryId(), request.getCategoryName());
 
-        // Step 3: Build Content Entity
         Content content = new Content();
         content.setTitle(request.getTitle());
         content.setDescription(request.getDescription());
@@ -78,10 +76,9 @@ public class CreatorContentServiceImpl implements CreatorContentService {
         content.setCreator(creatorUser);
         if (creatorUser != null) content.setCreatorId(creatorUser.getId());
 
-        // Step 4: Save Content to database
         Content savedContent = contentRepository.save(content);
+        log.info("Successfully published content ID: {} by creator ID: {}", savedContent.getId(), creatorId);
 
-        // Step 5: Increment Category resource count
         if (category != null) {
             category.setResourceCount((category.getResourceCount() == null ? 0 : category.getResourceCount()) + 1);
             categoryRepository.save(category);
@@ -90,9 +87,6 @@ public class CreatorContentServiceImpl implements CreatorContentService {
         return mapToResponse(savedContent);
     }
 
-    /*
-     * Upload PDF File Resource and save to server disk storage.
-     */
     @Override
     @Transactional
     public ContentResponse uploadPdfResource(
@@ -107,7 +101,9 @@ public class CreatorContentServiceImpl implements CreatorContentService {
             String categoryName,
             Long creatorId) {
 
+        log.info("Uploading PDF resource with title: '{}'", title);
         if (file == null || file.isEmpty()) {
+            log.warn("Upload failed. Provided PDF file is empty.");
             throw new BadRequestException("PDF file cannot be empty");
         }
 
@@ -129,11 +125,9 @@ public class CreatorContentServiceImpl implements CreatorContentService {
         return publishContent(request);
     }
 
-    /*
-     * Fetch all learning resources created by a specific creator (for Management Grid).
-     */
     @Override
     public List<ContentResponse> getCreatorContents(Long creatorId) {
+        log.info("Fetching all created resources for creator ID: {}", creatorId);
         userRepository.findById(creatorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Creator not found with id: " + creatorId));
 
@@ -143,14 +137,16 @@ public class CreatorContentServiceImpl implements CreatorContentService {
                 .collect(Collectors.toList());
     }
 
-    /*
-     * Update/Edit existing content resource details (Title, Description, Rich Text HTML, Price, Level, Tags, Status, Category).
-     */
     @Override
     @Transactional
     public ContentResponse updateContent(Long contentId, UpdateContentRequest request) {
+        log.info("Updating content ID: {}", contentId);
         Content content = contentRepository.findById(contentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Content not found with id: " + contentId));
+
+        if (content.getCreator() != null) {
+            SecurityUtils.validateOwnership(content.getCreator().getEmail());
+        }
 
         if (request.getTitle() != null && !request.getTitle().trim().isEmpty()) {
             content.setTitle(request.getTitle());
@@ -188,31 +184,37 @@ public class CreatorContentServiceImpl implements CreatorContentService {
         }
 
         Content updatedContent = contentRepository.save(content);
+        log.info("Successfully updated content ID: {}", updatedContent.getId());
         return mapToResponse(updatedContent);
     }
 
-    /*
-     * Toggle content status between DRAFT and PUBLISHED.
-     */
     @Override
     @Transactional
     public ContentResponse updateContentStatus(Long contentId, String status) {
+        log.info("Updating status of content ID: {} to {}", contentId, status);
         Content content = contentRepository.findById(contentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Content not found with id: " + contentId));
+
+        if (content.getCreator() != null) {
+            SecurityUtils.validateOwnership(content.getCreator().getEmail());
+        }
 
         content.setStatus(status);
         Content updatedContent = contentRepository.save(content);
+        log.info("Successfully updated status of content ID: {} to {}", updatedContent.getId(), status);
         return mapToResponse(updatedContent);
     }
 
-    /*
-     * Delete a learning resource and update category resource count.
-     */
     @Override
     @Transactional
     public void deleteContent(Long contentId) {
+        log.info("Deleting content ID: {}", contentId);
         Content content = contentRepository.findById(contentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Content not found with id: " + contentId));
+
+        if (content.getCreator() != null) {
+            SecurityUtils.validateOwnership(content.getCreator().getEmail());
+        }
 
         if (content.getCategoryId() != null) {
             categoryRepository.findById(content.getCategoryId()).ifPresent(category -> {
@@ -223,11 +225,9 @@ public class CreatorContentServiceImpl implements CreatorContentService {
         }
 
         contentRepository.delete(content);
+        log.info("Successfully deleted content ID: {}", contentId);
     }
 
-    /*
-     * Helper method to resolve Category by Name or ID with automatic creation if missing.
-     */
     private Category resolveCategory(Long categoryId, String categoryName) {
         if (categoryName != null && !categoryName.trim().isEmpty()) {
             String trimmedName = categoryName.trim();
@@ -242,9 +242,6 @@ public class CreatorContentServiceImpl implements CreatorContentService {
         }
     }
 
-    /*
-     * Helper method to save uploaded file locally and return file access URL.
-     */
     private String storeFileLocally(MultipartFile file) {
         try {
             Path uploadPath = Paths.get(UPLOAD_DIR);
@@ -264,13 +261,11 @@ public class CreatorContentServiceImpl implements CreatorContentService {
 
             return "/" + UPLOAD_DIR + uniqueFilename;
         } catch (IOException e) {
+            log.error("Failed to store uploaded file locally: {}", e.getMessage(), e);
             throw new BadRequestException("Could not store file: " + e.getMessage());
         }
     }
 
-    /*
-     * Helper method to map Content entity to ContentResponse DTO.
-     */
     private ContentResponse mapToResponse(Content content) {
         ContentResponse response = new ContentResponse(
                 content.getId(),

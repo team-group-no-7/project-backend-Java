@@ -1,11 +1,15 @@
 package com.learnhub.backend.modules.resource.controller;
 
+import com.learnhub.backend.common.dto.ApiResponse;
+import com.learnhub.backend.common.exception.ResourceNotFoundException;
+import com.learnhub.backend.common.util.SecurityUtils;
 import com.learnhub.backend.modules.resource.dto.CreateContentRequest;
 import com.learnhub.backend.modules.resource.dto.ContentResponse;
 import com.learnhub.backend.modules.resource.dto.ContentStatusRequest;
 import com.learnhub.backend.modules.resource.dto.UpdateContentRequest;
 import com.learnhub.backend.modules.resource.service.CreatorContentService;
-import com.learnhub.backend.common.dto.ApiResponse;
+import com.learnhub.backend.modules.user.entity.User;
+import com.learnhub.backend.modules.user.repository.UserRepository;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,48 +19,44 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-/*
+/**
  * CreatorContentController — REST Controller for Content Authoring Studio & Creator Resource Management Grid.
+ * Refactored with class-level @PreAuthorize and automatic JWT creator identity resolution.
  */
 @RestController
 @RequestMapping("/api/creator/content")
+@PreAuthorize("hasRole('CREATOR') or hasRole('ADMIN')")
 public class CreatorContentController {
 
     private final CreatorContentService creatorContentService;
+    private final UserRepository userRepository;
 
-    // Explicit constructor for dependency injection
-    public CreatorContentController(CreatorContentService creatorContentService) {
+    public CreatorContentController(CreatorContentService creatorContentService, UserRepository userRepository) {
         this.creatorContentService = creatorContentService;
+        this.userRepository = userRepository;
     }
 
-    /*
-     * GET /api/creator/content/status
-     * Health check endpoint for Content Studio module.
-     */
+    /** GET /api/creator/content/status — Health check endpoint */
     @GetMapping("/status")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<ApiResponse<String>> getStatus() {
         return ResponseEntity.ok(ApiResponse.success("Content Authoring Studio Module is Active", "OK"));
     }
 
-    /*
-     * POST /api/creator/content/article
-     * Publish a new Rich Text Article created in the frontend WYSIWYG editor.
-     */
+    /** POST /api/creator/content/article — Publish Rich Text Article */
     @PostMapping("/article")
-    @PreAuthorize("hasRole('CREATOR') or hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<ContentResponse>> publishArticle(@Valid @RequestBody CreateContentRequest request) {
+        if (request.getCreatorId() == null) {
+            request.setCreatorId(resolveCreatorId(null));
+        }
         request.setType("ARTICLE");
         ContentResponse response = creatorContentService.publishContent(request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Article published successfully", response));
     }
 
-    /*
-     * POST /api/creator/content/pdf
-     * Upload a PDF file resource directly using multipart/form-data.
-     */
+    /** POST /api/creator/content/pdf — Upload PDF file resource */
     @PostMapping("/pdf")
-    @PreAuthorize("hasRole('CREATOR') or hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<ContentResponse>> uploadPdf(
             @RequestParam("file") MultipartFile file,
             @RequestParam("title") String title,
@@ -67,44 +67,37 @@ public class CreatorContentController {
             @RequestParam(value = "status", defaultValue = "PUBLISHED") String status,
             @RequestParam(value = "categoryId", required = false) Long categoryId,
             @RequestParam(value = "categoryName", required = false) String categoryName,
-            @RequestParam("creatorId") Long creatorId) {
+            @RequestParam(value = "creatorId", required = false) Long creatorId) {
 
+        Long resolvedCreatorId = resolveCreatorId(creatorId);
         ContentResponse response = creatorContentService.uploadPdfResource(
-                file, title, description, price, level, tags, status, categoryId, categoryName, creatorId);
+                file, title, description, price, level, tags, status, categoryId, categoryName, resolvedCreatorId);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("PDF resource uploaded and published successfully", response));
     }
 
-    /*
-     * POST /api/creator/content
-     * Generic endpoint to create any learning resource via JSON.
-     */
+    /** POST /api/creator/content — Generic resource creation */
     @PostMapping
-    @PreAuthorize("hasRole('CREATOR') or hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<ContentResponse>> createContent(@Valid @RequestBody CreateContentRequest request) {
+        if (request.getCreatorId() == null) {
+            request.setCreatorId(resolveCreatorId(null));
+        }
         ContentResponse response = creatorContentService.publishContent(request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Content resource created successfully", response));
     }
 
-    /*
-     * GET /api/creator/content/{creatorId} & /api/creator/content/my-resources/{creatorId}
-     * Fetch all resources created by a creator for the Management Grid.
-     */
-    @GetMapping({"/{creatorId}", "/my-resources/{creatorId}"})
-    @PreAuthorize("hasRole('CREATOR') or hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<List<ContentResponse>>> getMyResources(@PathVariable Long creatorId) {
-        List<ContentResponse> resources = creatorContentService.getCreatorContents(creatorId);
+    /** GET /api/creator/content, GET /api/creator/content/my-resources, GET /api/creator/content/{creatorId} */
+    @GetMapping({"", "/my-resources", "/{creatorId}", "/my-resources/{creatorId}"})
+    public ResponseEntity<ApiResponse<List<ContentResponse>>> getMyResources(@PathVariable(required = false) Long creatorId) {
+        Long resolvedCreatorId = resolveCreatorId(creatorId);
+        List<ContentResponse> resources = creatorContentService.getCreatorContents(resolvedCreatorId);
         return ResponseEntity.ok(ApiResponse.success("Creator resources retrieved successfully", resources));
     }
 
-    /*
-     * PUT /api/creator/content/{id}
-     * Edit/Update an existing Article or PDF learning resource (title, description, contentBody, price, level, tags, status).
-     */
+    /** PUT /api/creator/content/{id} — Edit resource */
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('CREATOR') or hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<ContentResponse>> updateContent(
             @PathVariable Long id,
             @Valid @RequestBody UpdateContentRequest request) {
@@ -112,12 +105,8 @@ public class CreatorContentController {
         return ResponseEntity.ok(ApiResponse.success("Content resource updated successfully", response));
     }
 
-    /*
-     * PATCH /api/creator/content/{id}/status
-     * Toggle resource status between DRAFT and PUBLISHED.
-     */
+    /** PATCH /api/creator/content/{id}/status — Toggle DRAFT / PUBLISHED status */
     @PatchMapping("/{id}/status")
-    @PreAuthorize("hasRole('CREATOR') or hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<ContentResponse>> updateStatus(
             @PathVariable Long id,
             @Valid @RequestBody ContentStatusRequest request) {
@@ -125,14 +114,21 @@ public class CreatorContentController {
         return ResponseEntity.ok(ApiResponse.success("Resource status updated to " + request.getStatus(), response));
     }
 
-    /*
-     * DELETE /api/creator/content/{id}
-     * Delete a learning resource and update category resource counts.
-     */
+    /** DELETE /api/creator/content/{id} — Delete resource */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('CREATOR') or hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<String>> deleteContent(@PathVariable Long id) {
         creatorContentService.deleteContent(id);
         return ResponseEntity.ok(ApiResponse.success("Content resource deleted successfully", "Resource " + id + " deleted"));
+    }
+
+    private Long resolveCreatorId(Long requestedCreatorId) {
+        String currentEmail = SecurityUtils.getCurrentUserEmail();
+        User currentUser = userRepository.findByEmail(currentEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("Authenticated user context not found"));
+        if (requestedCreatorId != null && !SecurityUtils.isAdmin()) {
+            SecurityUtils.validateOwnershipById(currentUser.getId(), requestedCreatorId);
+            return requestedCreatorId;
+        }
+        return (requestedCreatorId != null && SecurityUtils.isAdmin()) ? requestedCreatorId : currentUser.getId();
     }
 }

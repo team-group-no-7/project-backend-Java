@@ -1,4 +1,4 @@
-package com.learnhub.backend.modules.mentorship.service.Impl;
+package com.learnhub.backend.modules.mentorship.service.impl;
 
 import com.learnhub.backend.modules.mentorship.dto.DoubtSessionRequest;
 import com.learnhub.backend.modules.mentorship.dto.DoubtSessionResponse;
@@ -8,22 +8,38 @@ import com.learnhub.backend.modules.mentorship.enums.BookingStatus;
 import com.learnhub.backend.modules.mentorship.enums.PaymentStatus;
 import com.learnhub.backend.modules.mentorship.repository.DoubtSessionRepository;
 import com.learnhub.backend.modules.mentorship.service.MentorshipService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.learnhub.backend.common.exception.ResourceNotFoundException;
+import com.learnhub.backend.common.util.SecurityUtils;
+import com.learnhub.backend.modules.user.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * MentorshipServiceImpl — Implementation class for Learner Mentorship Service with SLF4J logging.
+ */
 @Service
 @Transactional
 public class MentorshipServiceImpl implements MentorshipService {
 
-    @Autowired
-    private DoubtSessionRepository doubtSessionRepository;
+    private static final Logger log = LoggerFactory.getLogger(MentorshipServiceImpl.class);
+
+    private final DoubtSessionRepository doubtSessionRepository;
+    private final UserRepository userRepository;
+
+    public MentorshipServiceImpl(DoubtSessionRepository doubtSessionRepository, UserRepository userRepository) {
+        this.doubtSessionRepository = doubtSessionRepository;
+        this.userRepository = userRepository;
+    }
 
     @Override
     public DoubtSessionResponse bookSession(DoubtSessionRequest request) {
+        log.info("Booking mentorship doubt session for topic: '{}'", request.getTopic());
         DoubtSession session = new DoubtSession();
         session.setLearnerId(request.getLearnerId());
         session.setCreatorId(request.getCreatorId());
@@ -32,22 +48,23 @@ public class MentorshipServiceImpl implements MentorshipService {
         session.setDurationMinutes(request.getDurationMinutes());
         session.setSessionPrice(request.getSessionPrice());
         
-        // Set approved booking and paid status for completed transactions
         session.setBookingStatus(BookingStatus.APPROVED);
         session.setPaymentStatus(PaymentStatus.PAID);
 
-        // Generate Jitsi Room Hash
         String cleanTopic = request.getTopic().replaceAll("[^a-zA-Z0-9-]", "").toLowerCase();
         if (cleanTopic.isEmpty()) cleanTopic = "doubt";
         session.setJitsiRoomName("learnhub-" + cleanTopic + "-" + UUID.randomUUID().toString().substring(0, 8));
 
         DoubtSession savedSession = doubtSessionRepository.save(session);
+        log.info("Successfully booked mentorship session ID: {} with Jitsi room: {}", savedSession.getId(), savedSession.getJitsiRoomName());
         return mapToResponse(savedSession);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<DoubtSessionResponse> getSessionsForLearner(Long learnerId) {
+        log.info("Fetching doubt sessions for learner ID: {}", learnerId);
+        SecurityUtils.validateOwnershipByUserId(learnerId, userRepository);
         List<DoubtSession> sessions = doubtSessionRepository.findByLearnerId(learnerId);
         return sessions.stream().map(this::mapToResponse).collect(Collectors.toList());
     }
@@ -55,33 +72,37 @@ public class MentorshipServiceImpl implements MentorshipService {
     @Override
     @Transactional(readOnly = true)
     public List<DoubtSessionResponse> getSessionsForCreator(Long creatorId) {
+        log.info("Fetching doubt sessions for creator ID: {}", creatorId);
+        SecurityUtils.validateOwnershipByUserId(creatorId, userRepository);
         List<DoubtSession> sessions = doubtSessionRepository.findByCreatorId(creatorId);
         return sessions.stream().map(this::mapToResponse).collect(Collectors.toList());
     }
 
     @Override
     public DoubtSessionResponse confirmPayment(Long sessionId, String transactionId) {
+        log.info("Confirming payment for doubt session ID: {}", sessionId);
         DoubtSession session = doubtSessionRepository.findById(sessionId)
-                .orElseThrow(() -> new RuntimeException("Doubt session not found with id: " + sessionId));
+                .orElseThrow(() -> new ResourceNotFoundException("Doubt session not found with id: " + sessionId));
         
         session.setPaymentStatus(PaymentStatus.PAID);
         session.setBookingStatus(BookingStatus.APPROVED);
         session.setTransactionId(transactionId);
 
         DoubtSession savedSession = doubtSessionRepository.save(session);
+        log.info("Successfully confirmed payment for session ID: {}", savedSession.getId());
         return mapToResponse(savedSession);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<SessionResponse> getLearnerSessions(Long learnerId) {
+        log.info("Fetching learner sessions list for learner ID: {}", learnerId);
         return doubtSessionRepository.findByLearnerId(learnerId)
                 .stream()
                 .map(this::mapToSessionResponse)
                 .collect(Collectors.toList());
     }
 
-    // Helper mapper to generate DoubtSessionResponse
     private DoubtSessionResponse mapToResponse(DoubtSession session) {
         DoubtSessionResponse response = new DoubtSessionResponse();
         response.setId(session.getId());
@@ -116,7 +137,6 @@ public class MentorshipServiceImpl implements MentorshipService {
         return response;
     }
 
-    // Helper mapper to generate Riya's SessionResponse
     private SessionResponse mapToSessionResponse(DoubtSession session) {
         String bookingStatus = session.getBookingStatus() != null ? session.getBookingStatus().name() : "PENDING";
         String paymentStatus = session.getPaymentStatus() != null ? session.getPaymentStatus().name() : "PENDING";
