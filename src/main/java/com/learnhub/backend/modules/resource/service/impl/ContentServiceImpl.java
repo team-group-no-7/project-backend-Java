@@ -50,6 +50,9 @@ public class ContentServiceImpl implements ContentService {
         Long creatorId = content.getCreator() != null ? content.getCreator().getId() : null;
         String typeName = content.getType() != null ? content.getType() : "ARTICLE";
 
+        long dbPurchasesCount = purchaseRepository.countByContentId(content.getId());
+        int totalLearners = (int) Math.max(dbPurchasesCount, content.getLearnersCount() != null ? content.getLearnersCount() : 0);
+
         return new CatalogResponse(
                 content.getId(),
                 content.getTitle(),
@@ -65,7 +68,7 @@ public class ContentServiceImpl implements ContentService {
                 content.isFeatured(),
                 content.getRating() != null ? content.getRating().doubleValue() : null,
                 content.getReviewsCount(),
-                content.getLearnersCount()
+                totalLearners
         );
     }
 
@@ -141,11 +144,17 @@ public class ContentServiceImpl implements ContentService {
     @Override
     @Transactional(readOnly = true)
     public PlatformStatsResponse getPlatformStats() {
-        log.info("Computing platform analytics statistics");
+        log.info("Computing platform analytics statistics from database");
         PlatformStatsResponse stats = new PlatformStatsResponse();
         stats.setTotalUsers(userRepository.count());
         stats.setTotalContents(contentRepository.count());
-        stats.setTotalRevenue(BigDecimal.valueOf(14200.00));
+        
+        java.math.BigDecimal totalRevenue = purchaseRepository.findAll().stream()
+                .map(com.learnhub.backend.modules.payment.entity.Purchase::getAmountPaid)
+                .filter(java.util.Objects::nonNull)
+                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+
+        stats.setTotalRevenue(totalRevenue);
         return stats;
     }
 

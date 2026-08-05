@@ -16,7 +16,7 @@ import java.util.List;
  * PublicCreatorProfileController — Exposes REST endpoints to view public creator details and their courses/guides.
  */
 @RestController
-@RequestMapping("/api/creators")
+@RequestMapping({"/api/creators", "/api/public/creators"})
 public class PublicCreatorProfileController {
 
     private final UserRepository userRepository;

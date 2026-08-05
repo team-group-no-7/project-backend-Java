@@ -37,4 +37,14 @@ public class AdminUserController {
         AdminUserResponse updatedUser = userService.toggleUserFreeze(id);
         return ResponseEntity.ok(ApiResponse.success("User freeze status updated successfully", updatedUser));
     }
+
+    // PATCH /api/admin/users/{id}/role - Update user access role
+    @PatchMapping("/users/{id}/role")
+    public ResponseEntity<ApiResponse<AdminUserResponse>> updateUserRole(
+            @PathVariable("id") Long id,
+            @RequestBody java.util.Map<String, String> body) {
+        String roleStr = body != null ? body.get("role") : "LEARNER";
+        AdminUserResponse updatedUser = userService.updateUserRole(id, roleStr);
+        return ResponseEntity.ok(ApiResponse.success("User role updated successfully in database", updatedUser));
+    }
 }

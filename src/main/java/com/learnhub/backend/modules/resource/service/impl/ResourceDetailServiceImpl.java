@@ -1,5 +1,6 @@
 package com.learnhub.backend.modules.resource.service.impl;
 
+import com.learnhub.backend.modules.payment.repository.PurchaseRepository;
 import com.learnhub.backend.modules.resource.dto.ResourceDetailResponse;
 import com.learnhub.backend.modules.resource.dto.ReviewDto;
 import com.learnhub.backend.modules.resource.entity.Content;
@@ -32,13 +33,16 @@ public class ResourceDetailServiceImpl implements ResourceDetailService {
     private final ContentRepository contentRepository;
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
+    private final PurchaseRepository purchaseRepository;
 
     public ResourceDetailServiceImpl(ContentRepository contentRepository,
                                      ReviewRepository reviewRepository,
-                                     UserRepository userRepository) {
+                                     UserRepository userRepository,
+                                     PurchaseRepository purchaseRepository) {
         this.contentRepository = contentRepository;
         this.reviewRepository = reviewRepository;
         this.userRepository = userRepository;
+        this.purchaseRepository = purchaseRepository;
     }
 
     @Override
@@ -71,7 +75,12 @@ public class ResourceDetailServiceImpl implements ResourceDetailService {
 
         response.setRating(content.getRating() != null ? content.getRating() : java.math.BigDecimal.valueOf(4.8));
         response.setReviewsCount(content.getReviewsCount() != null ? content.getReviewsCount() : 0);
-        response.setLearnersCount(content.getLearnersCount() != null ? content.getLearnersCount() : 0);
+
+        // Dynamically compute enrolled learners count from purchase transaction history in DB
+        long dbPurchasesCount = purchaseRepository.countByContentId(id);
+        int totalLearners = (int) Math.max(dbPurchasesCount, content.getLearnersCount() != null ? content.getLearnersCount() : 0);
+        response.setLearnersCount(totalLearners);
+
         response.setCreatedAt(content.getCreatedAt() != null ? content.getCreatedAt().toString() : "2026-06-10");
 
         if (content.getCategory() != null) {
@@ -97,19 +106,10 @@ public class ResourceDetailServiceImpl implements ResourceDetailService {
         }
 
         List<Review> dbReviews = reviewRepository.findByContentId(id);
-        List<ReviewDto> reviewDtos = new ArrayList<>();
-
-        if (!dbReviews.isEmpty()) {
-            reviewDtos = dbReviews.stream()
-                    .map(r -> new ReviewDto(r.getId(), r.getStudentName(), r.getAvatarUrl(),
-                            r.getRating(), r.getReviewText(), r.getReviewDate()))
-                    .collect(Collectors.toList());
-        } else {
-            reviewDtos.add(new ReviewDto(1L, "Aarav Sharma", "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100",
-                    5, "Exceptionally clear explanation of Spring Boot architecture and PostgreSQL indexing!", "2026-07-15"));
-            reviewDtos.add(new ReviewDto(2L, "Priya Patel", "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100",
-                    5, "The PDF notes and hands-on code examples helped me pass my CDAC interview easily.", "2026-07-20"));
-        }
+        List<ReviewDto> reviewDtos = dbReviews.stream()
+                .map(r -> new ReviewDto(r.getId(), r.getStudentName(), r.getAvatarUrl(),
+                        r.getRating(), r.getReviewText(), r.getReviewDate()))
+                .collect(Collectors.toList());
 
         response.setReviews(reviewDtos);
         return response;

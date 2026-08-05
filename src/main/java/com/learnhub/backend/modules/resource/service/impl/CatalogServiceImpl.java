@@ -1,5 +1,6 @@
 package com.learnhub.backend.modules.resource.service.impl;
 
+import com.learnhub.backend.modules.payment.repository.PurchaseRepository;
 import com.learnhub.backend.common.exception.ResourceNotFoundException;
 import com.learnhub.backend.modules.resource.dto.ContentRequest;
 import com.learnhub.backend.modules.resource.dto.ContentResponse;
@@ -28,10 +29,14 @@ public class CatalogServiceImpl implements CatalogService {
 
     private final ContentRepository contentRepository;
     private final CategoryRepository categoryRepository;
+    private final PurchaseRepository purchaseRepository;
 
-    public CatalogServiceImpl(ContentRepository contentRepository, CategoryRepository categoryRepository) {
+    public CatalogServiceImpl(ContentRepository contentRepository,
+                              CategoryRepository categoryRepository,
+                              PurchaseRepository purchaseRepository) {
         this.contentRepository = contentRepository;
         this.categoryRepository = categoryRepository;
+        this.purchaseRepository = purchaseRepository;
     }
 
     @Override
@@ -127,7 +132,10 @@ public class CatalogServiceImpl implements CatalogService {
         response.setTrending(content.isTrending());
         response.setRating(content.getRating());
         response.setReviewsCount(content.getReviewsCount());
-        response.setLearnersCount(content.getLearnersCount());
+        // Dynamically compute enrolled learners count from purchase transaction history in DB
+        long dbPurchasesCount = purchaseRepository.countByContentId(content.getId());
+        int totalLearners = (int) Math.max(dbPurchasesCount, content.getLearnersCount() != null ? content.getLearnersCount() : 0);
+        response.setLearnersCount(totalLearners);
         response.setApprovalStatus(content.getApprovalStatus());
         response.setCreatorId(content.getCreatorId());
         response.setCreatedAt(content.getCreatedAt());

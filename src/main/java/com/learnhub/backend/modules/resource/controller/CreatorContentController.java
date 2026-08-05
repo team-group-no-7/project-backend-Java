@@ -89,9 +89,23 @@ public class CreatorContentController {
                 .body(ApiResponse.success("Content resource created successfully", response));
     }
 
-    /** GET /api/creator/content, GET /api/creator/content/my-resources, GET /api/creator/content/{creatorId} */
-    @GetMapping({"", "/my-resources", "/{creatorId}", "/my-resources/{creatorId}"})
-    public ResponseEntity<ApiResponse<List<ContentResponse>>> getMyResources(@PathVariable(required = false) Long creatorId) {
+    /** GET /api/creator/content/my-resources — Get authenticated creator's resources */
+    @GetMapping("/my-resources")
+    public ResponseEntity<ApiResponse<List<ContentResponse>>> getMyResources() {
+        Long resolvedCreatorId = resolveCreatorId(null);
+        List<ContentResponse> resources = creatorContentService.getCreatorContents(resolvedCreatorId);
+        return ResponseEntity.ok(ApiResponse.success("Creator resources retrieved successfully", resources));
+    }
+
+    /** GET /api/creator/content — Default get authenticated creator's resources */
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<ContentResponse>>> getAllResources() {
+        return getMyResources();
+    }
+
+    /** GET /api/creator/content/{creatorId} — Get resources by specific numeric creator ID */
+    @GetMapping("/{creatorId:\\d+}")
+    public ResponseEntity<ApiResponse<List<ContentResponse>>> getResourcesByCreatorId(@PathVariable Long creatorId) {
         Long resolvedCreatorId = resolveCreatorId(creatorId);
         List<ContentResponse> resources = creatorContentService.getCreatorContents(resolvedCreatorId);
         return ResponseEntity.ok(ApiResponse.success("Creator resources retrieved successfully", resources));

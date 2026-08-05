@@ -22,6 +22,8 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long> {
 
     long countByUserId(Long userId);
 
+    long countByContentId(Long contentId);
+
     @Query("SELECT COALESCE(SUM(p.amountPaid), 0) FROM Purchase p WHERE p.userId = :userId")
     BigDecimal totalInvestment(@Param("userId") Long userId);
 

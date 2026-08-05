@@ -60,10 +60,36 @@ public class PaymentController {
     }
 
     /**
+     * GET /api/payment/my-purchases & GET /api/payment/purchases
+     * Returns purchase history DTOs for the currently authenticated user based on JWT context.
+     */
+    @GetMapping({"/my-purchases", "/purchases"})
+    public ResponseEntity<ApiResponse<List<com.learnhub.backend.modules.payment.dto.response.PurchaseResponse>>> getMyPurchases() {
+        String currentEmail = SecurityUtils.getCurrentUserEmail();
+        com.learnhub.backend.modules.user.entity.User currentUser = userRepository.findByEmail(currentEmail)
+                .orElseThrow(() -> new com.learnhub.backend.common.exception.ResourceNotFoundException("Authenticated user context not found"));
+
+        List<Purchase> purchases = razorpayService.getPurchasesForUser(currentUser.getId());
+        List<com.learnhub.backend.modules.payment.dto.response.PurchaseResponse> responseList = purchases.stream()
+                .map(p -> new com.learnhub.backend.modules.payment.dto.response.PurchaseResponse(
+                        p.getId(),
+                        p.getContent() != null ? p.getContent().getId() : null,
+                        p.getContent() != null ? p.getContent().getTitle() : "Learning Resource",
+                        p.getContent() != null && p.getContent().getCategory() != null ? p.getContent().getCategory().getName() : "General",
+                        p.getAmountPaid(),
+                        p.getPaymentStatus() != null ? p.getPaymentStatus() : "SUCCESS",
+                        p.getPurchasedAt()
+                ))
+                .collect(java.util.stream.Collectors.toList());
+
+        return ResponseEntity.ok(ApiResponse.success("My purchases retrieved successfully", responseList));
+    }
+
+    /**
      * GET /api/payment/purchases/{userId}
      * Returns purchase history DTOs for a specific user after verifying ownership/admin authority.
      */
-    @GetMapping("/purchases/{userId}")
+    @GetMapping("/purchases/{userId:\\d+}")
     public ResponseEntity<ApiResponse<List<com.learnhub.backend.modules.payment.dto.response.PurchaseResponse>>> getUserPurchases(@PathVariable Long userId) {
         SecurityUtils.validateOwnershipByUserId(userId, userRepository);
         List<Purchase> purchases = razorpayService.getPurchasesForUser(userId);

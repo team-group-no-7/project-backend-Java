@@ -21,7 +21,7 @@ import java.util.List;
  * Refactored with class-level @PreAuthorize and automatic JWT identity resolution.
  */
 @RestController
-@RequestMapping("/api/sessions")
+@RequestMapping({"/api/sessions", "/api/mentorship"})
 @PreAuthorize("isAuthenticated()")
 public class MentorshipController {
 

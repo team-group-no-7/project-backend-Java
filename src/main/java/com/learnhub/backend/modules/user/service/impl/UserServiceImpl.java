@@ -75,6 +75,22 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
+    public AdminUserResponse updateUserRole(Long userId, String role) {
+        log.info("Admin updating role for user ID: {} to {}", userId, role);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+        
+        try {
+            user.setUserRole(com.learnhub.backend.modules.user.entity.UserRole.valueOf(role.toUpperCase()));
+        } catch (Exception e) {
+            log.warn("Invalid role string passed: {}", role);
+        }
+        User updatedUser = userRepository.save(user);
+        return mapToAdminUserResponse(updatedUser);
+    }
+
+    @Override
     public Optional<User> getUserById(Long id) {
         return userRepository.findById(id);
     }

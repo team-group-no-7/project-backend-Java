@@ -29,6 +29,11 @@ public interface UserService {
     AdminUserResponse toggleUserFreeze(Long userId);
 
     /*
+     * Update user role by administrator.
+     */
+    AdminUserResponse updateUserRole(Long userId, String role);
+
+    /*
      * Get user by ID.
      */
     Optional<User> getUserById(Long id);
