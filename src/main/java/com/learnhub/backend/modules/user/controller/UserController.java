@@ -49,6 +49,33 @@ public class UserController {
     }
 
     /*
+     * GET /api/users/profile
+     * Retrieve the authenticated user's profile (RESTful self-resource).
+     */
+    @GetMapping("/profile")
+    public ResponseEntity<ApiResponse<UserProfileResponse>> getCurrentUserProfile() {
+        String email = com.learnhub.backend.common.util.SecurityUtils.getCurrentUserEmail();
+        User user = userService.getUserByEmail(email)
+                .orElseThrow(() -> new com.learnhub.backend.common.exception.ResourceNotFoundException("User context not found"));
+        UserProfileResponse profile = userService.getUserProfile(user.getId());
+        return ResponseEntity.ok(ApiResponse.success("User profile retrieved successfully", profile));
+    }
+
+    /*
+     * PUT /api/users/profile
+     * Update the authenticated user's profile (RESTful self-resource).
+     */
+    @PutMapping("/profile")
+    public ResponseEntity<ApiResponse<UserProfileResponse>> updateCurrentUserProfile(
+            @Valid @RequestBody UpdateProfileRequest request) {
+        String email = com.learnhub.backend.common.util.SecurityUtils.getCurrentUserEmail();
+        User user = userService.getUserByEmail(email)
+                .orElseThrow(() -> new com.learnhub.backend.common.exception.ResourceNotFoundException("User context not found"));
+        UserProfileResponse updatedProfile = userService.updateUserProfile(user.getId(), request);
+        return ResponseEntity.ok(ApiResponse.success("User profile updated successfully", updatedProfile));
+    }
+
+    /*
      * GET /api/users/{id}
      * View user profile by user ID.
      */
@@ -80,3 +107,4 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success("Congratulations! You are now a Creator on LearnHub", profile));
     }
 }
+

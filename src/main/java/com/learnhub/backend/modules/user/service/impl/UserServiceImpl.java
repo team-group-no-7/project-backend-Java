@@ -127,8 +127,8 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
         SecurityUtils.validateOwnership(user.getEmail());
 
-        if (!"CREATOR".equalsIgnoreCase(user.getRole())) {
-            user.setRole("CREATOR");
+        if (user.getUserRole() != com.learnhub.backend.modules.user.entity.UserRole.CREATOR) {
+            user.setUserRole(com.learnhub.backend.modules.user.entity.UserRole.CREATOR);
         }
 
         User updatedUser = userRepository.save(user);

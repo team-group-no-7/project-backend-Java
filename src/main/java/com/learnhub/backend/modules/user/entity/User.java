@@ -79,6 +79,20 @@ public class User {
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
 
+    public UserRole getUserRole() {
+        if (role == null) return UserRole.LEARNER;
+        try {
+            return UserRole.valueOf(role.toUpperCase());
+        } catch (Exception e) {
+            return UserRole.LEARNER;
+        }
+    }
+
+    public void setUserRole(UserRole userRole) {
+        this.role = userRole != null ? userRole.name() : UserRole.LEARNER.name();
+    }
+
+
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
 
