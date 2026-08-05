@@ -28,6 +28,7 @@ public class ResourceDetailResponse {
     private Long creatorId;
     private String creatorName;
     private String creatorAvatar;
+    private String thumbnailUrl;
     private String createdAt;
     private List<ReviewDto> reviews;
 
@@ -245,6 +246,18 @@ public class ResourceDetailResponse {
 
     public String getCreator_avatar() {
         return creatorAvatar;
+    }
+
+    public String getThumbnailUrl() {
+        return thumbnailUrl;
+    }
+
+    public void setThumbnailUrl(String thumbnailUrl) {
+        this.thumbnailUrl = thumbnailUrl;
+    }
+
+    public String getThumbnail_url() {
+        return thumbnailUrl;
     }
 
     public String getCreatedAt() {

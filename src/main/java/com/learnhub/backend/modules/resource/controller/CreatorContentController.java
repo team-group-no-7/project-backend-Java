@@ -55,10 +55,11 @@ public class CreatorContentController {
                 .body(ApiResponse.success("Article published successfully", response));
     }
 
-    /** POST /api/creator/content/pdf — Upload PDF file resource */
+    /** POST /api/creator/content/pdf — Upload PDF file resource with optional thumbnail image */
     @PostMapping("/pdf")
     public ResponseEntity<ApiResponse<ContentResponse>> uploadPdf(
             @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "thumbnail", required = false) MultipartFile thumbnail,
             @RequestParam("title") String title,
             @RequestParam(value = "description", required = false) String description,
             @RequestParam(value = "price", defaultValue = "0.00") Double price,
@@ -71,7 +72,7 @@ public class CreatorContentController {
 
         Long resolvedCreatorId = resolveCreatorId(creatorId);
         ContentResponse response = creatorContentService.uploadPdfResource(
-                file, title, description, price, level, tags, status, categoryId, categoryName, resolvedCreatorId);
+                file, thumbnail, title, description, price, level, tags, status, categoryId, categoryName, resolvedCreatorId);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("PDF resource uploaded and published successfully", response));

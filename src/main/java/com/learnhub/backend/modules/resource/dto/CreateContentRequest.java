@@ -15,6 +15,7 @@ public class CreateContentRequest {
     private String previewText;
     private String contentBody; // Rich Text HTML/Markdown from WYSIWYG editor
     private String fileUrl;     // Download/View URL for PDF resources
+    private String thumbnailUrl; // Cover/Thumbnail Image URL for Content
 
     private Double price = 0.00;
     private String type = "ARTICLE"; // ARTICLE, PDF, COURSE
@@ -87,6 +88,14 @@ public class CreateContentRequest {
 
     public void setFileUrl(String fileUrl) {
         this.fileUrl = fileUrl;
+    }
+
+    public String getThumbnailUrl() {
+        return thumbnailUrl;
+    }
+
+    public void setThumbnailUrl(String thumbnailUrl) {
+        this.thumbnailUrl = thumbnailUrl;
     }
 
     public Double getPrice() {

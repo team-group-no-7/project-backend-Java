@@ -22,6 +22,19 @@ public interface CreatorContentService {
      */
     ContentResponse uploadPdfResource(
             MultipartFile file,
+            MultipartFile thumbnail,
+            String title,
+            String description,
+            Double price,
+            String level,
+            String tags,
+            String status,
+            Long categoryId,
+            String categoryName,
+            Long creatorId);
+
+    ContentResponse uploadPdfResource(
+            MultipartFile file,
             String title,
             String description,
             Double price,

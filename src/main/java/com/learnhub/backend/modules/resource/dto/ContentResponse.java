@@ -19,6 +19,9 @@ public class ContentResponse {
     @JsonProperty("file_url")
     private String fileUrl;
 
+    @JsonProperty("thumbnail_url")
+    private String thumbnailUrl;
+
     private BigDecimal price;
     private String type;
     private String level;
@@ -130,6 +133,14 @@ public class ContentResponse {
 
     public void setFileUrl(String fileUrl) {
         this.fileUrl = fileUrl;
+    }
+
+    public String getThumbnailUrl() {
+        return thumbnailUrl;
+    }
+
+    public void setThumbnailUrl(String thumbnailUrl) {
+        this.thumbnailUrl = thumbnailUrl;
     }
 
     public BigDecimal getPrice() {

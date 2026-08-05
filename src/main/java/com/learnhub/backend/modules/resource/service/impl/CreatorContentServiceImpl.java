@@ -66,6 +66,9 @@ public class CreatorContentServiceImpl implements CreatorContentService {
         content.setPreviewText(request.getPreviewText());
         content.setContentBody(request.getContentBody());
         content.setFileUrl(request.getFileUrl());
+        if (request.getThumbnailUrl() != null && !request.getThumbnailUrl().trim().isEmpty()) {
+            content.setThumbnailUrl(request.getThumbnailUrl());
+        }
         content.setPrice(BigDecimal.valueOf(request.getPrice() != null ? request.getPrice() : 0.00));
         content.setType(request.getType() != null ? request.getType() : "ARTICLE");
         content.setLevel(request.getLevel() != null ? request.getLevel() : "Beginner");
@@ -92,6 +95,7 @@ public class CreatorContentServiceImpl implements CreatorContentService {
     @Transactional
     public ContentResponse uploadPdfResource(
             MultipartFile file,
+            MultipartFile thumbnail,
             String title,
             String description,
             Double price,
@@ -109,11 +113,13 @@ public class CreatorContentServiceImpl implements CreatorContentService {
         }
 
         String fileUrl = storeFileLocally(file);
+        String thumbnailUrl = storeThumbnailLocally(thumbnail);
 
         CreateContentRequest request = new CreateContentRequest();
         request.setTitle(title);
         request.setDescription(description);
         request.setFileUrl(fileUrl);
+        request.setThumbnailUrl(thumbnailUrl);
         request.setPrice(price);
         request.setType("PDF");
         request.setLevel(level);
@@ -124,6 +130,22 @@ public class CreatorContentServiceImpl implements CreatorContentService {
         request.setCreatorId(creatorId);
 
         return publishContent(request);
+    }
+
+    @Override
+    @Transactional
+    public ContentResponse uploadPdfResource(
+            MultipartFile file,
+            String title,
+            String description,
+            Double price,
+            String level,
+            String tags,
+            String status,
+            Long categoryId,
+            String categoryName,
+            Long creatorId) {
+        return uploadPdfResource(file, null, title, description, price, level, tags, status, categoryId, categoryName, creatorId);
     }
 
     @Override
@@ -267,6 +289,31 @@ public class CreatorContentServiceImpl implements CreatorContentService {
         }
     }
 
+    private String storeThumbnailLocally(MultipartFile thumbnail) {
+        if (thumbnail == null || thumbnail.isEmpty()) return null;
+        try {
+            Path uploadPath = Paths.get("uploads/thumbnails/");
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+
+            String originalFilename = thumbnail.getOriginalFilename();
+            String fileExtension = ".jpg";
+            if (originalFilename != null && originalFilename.contains(".")) {
+                fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            }
+
+            String uniqueFilename = UUID.randomUUID().toString() + fileExtension;
+            Path filePath = uploadPath.resolve(uniqueFilename);
+            Files.copy(thumbnail.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            return "/uploads/thumbnails/" + uniqueFilename;
+        } catch (IOException e) {
+            log.error("Failed to store uploaded thumbnail image locally: {}", e.getMessage(), e);
+            return null;
+        }
+    }
+
     private ContentResponse mapToResponse(Content content) {
         ContentResponse response = new ContentResponse(
                 content.getId(),
@@ -289,6 +336,7 @@ public class CreatorContentServiceImpl implements CreatorContentService {
                 content.getCreatorId(),
                 content.getCreatedAt()
         );
+        response.setThumbnailUrl(content.getThumbnailUrl());
         if (content.getCreator() != null) {
             response.setCreatorName(content.getCreator().getName());
             response.setCreatorAvatar(content.getCreator().getAvatarUrl());

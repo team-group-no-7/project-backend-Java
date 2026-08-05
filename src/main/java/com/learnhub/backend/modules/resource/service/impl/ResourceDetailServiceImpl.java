@@ -54,6 +54,7 @@ public class ResourceDetailServiceImpl implements ResourceDetailService {
         response.setPreviewText(content.getPreviewText());
         response.setContentBody(content.getContentBody());
         response.setFileUrl(content.getFileUrl());
+        response.setThumbnailUrl(content.getThumbnailUrl());
         response.setPrice(content.getPrice());
         response.setType(content.getType() != null ? content.getType() : "Notes & Code");
         response.setLevel(content.getLevel() != null ? content.getLevel() : "Intermediate");

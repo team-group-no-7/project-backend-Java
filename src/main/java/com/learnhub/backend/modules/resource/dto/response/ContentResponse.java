@@ -1,5 +1,6 @@
 package com.learnhub.backend.modules.resource.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.learnhub.backend.modules.resource.enums.ContentType;
 
 import java.math.BigDecimal;
@@ -25,6 +26,9 @@ public class ContentResponse {
     private Integer learnersCount;
     private String categoryName;
     private String creatorName;
+
+    @JsonProperty("thumbnail_url")
+    private String thumbnailUrl;
 
     // Default Constructor
     public ContentResponse() {
@@ -177,6 +181,14 @@ public class ContentResponse {
 
     public void setCreatorName(String creatorName) {
         this.creatorName = creatorName;
+    }
+
+    public String getThumbnailUrl() {
+        return thumbnailUrl;
+    }
+
+    public void setThumbnailUrl(String thumbnailUrl) {
+        this.thumbnailUrl = thumbnailUrl;
     }
 
     @Override
