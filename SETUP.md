@@ -1,28 +1,25 @@
-# 🚀 LearnHub — Project Setup & Local Developer Onboarding Guide
+# 🚀 LearnHub Backend — Setup & Development Guide
 
-This guide provides step-by-step instructions for setting up and running **LearnHub** (Java Spring Boot Backend + React Frontend + PostgreSQL Database) on your local development environment.
+This guide provides step-by-step instructions for setting up and running the **LearnHub Java Backend** (Spring Boot + PostgreSQL) on your local development machine.
 
 ---
 
 ## 🛠️ Step 1: Prerequisites Verification
 
-Ensure you have the following software installed on your local machine:
+Ensure you have the following software installed:
 
 1. **Java Development Kit (JDK)**: Version 17 or higher (`java -version`).
-2. **Node.js & npm**: Version 18 or higher (`node -v`).
-3. **PostgreSQL Database**: Version 14 or higher (`psql --version`).
+2. **PostgreSQL Database**: Version 14 or higher (`psql --version`).
+3. **Maven Wrapper**: Included in repository (`mvnw` / `mvnw.cmd`).
 4. **Git**: Version control client.
 
 ---
 
-## 📥 Step 2: Clone the Repositories
+## 📥 Step 2: Clone Backend Repository
 
 ```bash
-# Clone Backend Repository
 git clone https://github.com/team-group-no-7/project-backend-Java.git
-
-# Clone Frontend Repository
-git clone https://github.com/team-group-no-7/project-frontend-react.git
+cd project-backend-Java
 ```
 
 ---
@@ -37,7 +34,7 @@ CREATE DATABASE learnhub_db;
 
 ---
 
-## ⚙️ Step 4: Automatic Database Initialization Logic
+## ⚙️ Step 4: Automated Database Initialization
 
 No manual SQL execution is required! The backend application properties configure automated execution:
 
@@ -49,7 +46,7 @@ No manual SQL execution is required! The backend application properties configur
 
 ## 🔧 Step 5: Application Properties & Custom Credentials
 
-In [`src/main/resources/application.properties`](src/main/resources/application.properties), the default connection settings are:
+In [`src/main/resources/application.properties`](src/main/resources/application.properties), default connection settings are:
 
 ```properties
 spring.datasource.url=jdbc:postgresql://localhost:5432/learnhub_db
@@ -57,7 +54,7 @@ spring.datasource.username=postgres
 spring.datasource.password=postgres
 ```
 
-If your local PostgreSQL installation uses a custom password, set environment variables in your terminal before launching Spring Boot (without modifying tracked code):
+If your local PostgreSQL installation uses a custom password, set environment variables in your terminal before launching Spring Boot (without modifying committed code):
 
 * **Windows (PowerShell)**:
   ```powershell
@@ -83,27 +80,11 @@ Open a terminal in the `project-backend-Java` root directory and execute:
   ./mvnw spring-boot:run
   ```
 
-*The Spring Boot server will start at `http://localhost:8080`.*
+*The backend REST API server will start at `http://localhost:8080`.*
 
 ---
 
-## ⚛️ Step 7: Running the React Frontend
-
-Open a second terminal in the `project-frontend-react` root directory and execute:
-
-```bash
-# Install dependencies
-npm install
-
-# Start Vite development server
-npm run dev
-```
-
-*The React application will start at `http://localhost:5173`.*
-
----
-
-## 📡 Step 8: Swagger API Documentation
+## 📡 Step 7: Swagger API Documentation
 
 Once the backend is running, inspect and test REST endpoints using Swagger UI:
 
@@ -112,22 +93,22 @@ Once the backend is running, inspect and test REST endpoints using Swagger UI:
 
 ---
 
-## 🔑 Step 9: Default Accounts for Local Testing
+## 🔑 Step 8: Default Accounts for API Testing
 
 Verified from [`data.sql`](src/main/resources/data.sql):
 
 | Role | Email | Password | Privileges |
 | :--- | :--- | :--- | :--- |
-| **Learner** | `arjun.mehta@learnhub.com` | `password123` | Marketplace, Purchase, PDF Reader, Q&A |
-| **Learner** | `priya.sharma@learnhub.com` | `password123` | Marketplace, Reviews, Q&A, Doubt Sessions |
-| **Creator** | `rohan.verma@learnhub.com` | `password123` | Content Studio, Management Grid, Q&A Replies |
-| **Admin** | `admin@learnhub.com` | `admin123` | Admin Panel, User/Resource/Txn Grids, Refunds |
+| **Learner** | `arjun.mehta@learnhub.com` | `password123` | Read APIs, Purchases, Q&A |
+| **Learner** | `priya.sharma@learnhub.com` | `password123` | Read APIs, Reviews, Q&A, Mentorship |
+| **Creator** | `rohan.verma@learnhub.com` | `password123` | Content CRUD, PDF Uploads, Q&A Replies |
+| **Admin** | `admin@learnhub.com` | `admin123` | Admin REST APIs, Refund Actions |
 
 ---
 
-## ❓ Step 10: Troubleshooting
+## ❓ Step 9: Troubleshooting
 
 * **Problem: PostgreSQL Connection Refused (`PSQLException: Connection refused`)**
   * *Solution*: Ensure PostgreSQL service is running on port 5432 and database `learnhub_db` exists.
-* **Problem: Port 8080 / 5173 in use**
-  * *Solution*: Stop any process using port 8080 (`netstat -ano | findstr 8080`) or port 5173.
+* **Problem: Port 8080 in use**
+  * *Solution*: Stop any process using port 8080 (`netstat -ano | findstr 8080`).

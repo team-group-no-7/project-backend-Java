@@ -1,69 +1,60 @@
-# 🎓 LearnHub — Developer Knowledge & Technical Marketplace Platform
+# 🎓 LearnHub Backend (Spring Boot & PostgreSQL)
 
-LearnHub is a full-stack, learner-focused technical knowledge marketplace built with a **Java Spring Boot Modular Monolith** backend and a **React 18 + Vite + TailwindCSS** frontend. The platform enables verified developers to publish structured notes, guides, and architecture blueprints, while allowing learners to purchase study materials, read inline via a built-in PDF viewer, engage in Q&A discussion forums, and schedule 1:1 live video doubt sessions.
+LearnHub Backend is a robust, learner-focused RESTful web service built with a **Java Spring Boot Modular Monolith** architecture and **PostgreSQL**. It powers user authentication (JWT), role-based authorization, digital study guide distribution, 1-on-1 live mentorship scheduling, Q&A community forums, payment verification, and administrative refund controls.
 
 ---
 
 ## 📋 Table of Contents
 
 - [Project Overview](#-project-overview)
-- [Problem Statement & Solution](#-problem-statement--solution)
-- [System Architecture](#-system-architecture)
-- [Modular Monolith Package Structure](#-modular-monolith-package-structure)
-- [Frontend Structure](#-frontend-structure)
+- [System Architecture & Modular Monolith](#-system-architecture--modular-monolith)
+- [Package & Module Structure](#-package--module-structure)
 - [Technology Stack](#-technology-stack)
 - [Database Architecture & Initialization](#-database-architecture--initialization)
-- [Security, Auth & Ownership Validation](#-security-auth--ownership-validation)
+- [Security, Authentication & Ownership Validation](#-security-authentication--ownership-validation)
 - [Payment Gateway Integration](#-payment-gateway-integration)
-- [API Documentation (Swagger)](#-api-documentation-swagger)
+- [API Documentation (Swagger / OpenAPI)](#-api-documentation-swagger--openapi)
 - [Environment Variables](#-environment-variables)
 - [Pre-Configured Demo Accounts](#-pre-configured-demo-accounts)
 - [Setup & Execution Guide](#-setup--execution-guide)
-- [Future Enhancements](#-future-enhancements)
-- [Contributors](#-contributors)
+- [Troubleshooting & FAQs](#-troubleshooting--faqs)
+- [Contribution Guidelines](#-contribution-guidelines)
 
 ---
 
 ## 🎯 Project Overview
 
-LearnHub is designed to solve the fragmentation of technical study resources by providing an end-to-end marketplace for developers, authors, and engineering students. Verified technical creators upload PDF study guides, set custom pricing, and provide 1:1 mentorship, while learners enjoy instant entitlement upon purchase, inline reading, and interactive Q&A discussion threads.
+LearnHub Backend provides secure REST API services for technical study material publishing, inline PDF file streaming, interactive Q&A discussions, mentorship scheduling, and payment handling. It features automated PostgreSQL schema initialization, JWT token issuance with refresh token rotation, role-based authorization (`LEARNER`, `CREATOR`, `ADMIN`), and fine-grained resource ownership validation.
 
 ---
 
-## 💡 Problem Statement & Solution
+## 🏛️ System Architecture & Modular Monolith
 
-* **Problem**: Fragmented study materials, poor quality unverified PDF guides, lack of direct interaction with technical authors, and rigid subscription models.
-* **Solution**: A unified marketplace with verified creator profiles, instant inline document streaming, direct 1:1 video doubt sessions via Jitsi Meet, and a pay-per-resource entitlement model.
-
----
-
-## 🏛️ System Architecture
-
-LearnHub follows a **Modular Monolith** pattern organized into clean vertical domain packages. Each module owns its REST controllers, services, repositories, and domain entities, preparing the application for seamless microservices decomposition if required.
+LearnHub Backend is designed as a **Modular Monolith** organized into vertical domain packages. Each module manages its own REST controllers, business services, Spring Data JPA repositories, and database entities.
 
 ```
-LearnHub Monolith Architecture
- ├── Frontend Client (React 18 + Vite + Axios + Tailwind CSS)
- └── Backend REST API (Spring Boot 4.1.0 + Spring Security + JWT + PostgreSQL)
-      ├── auth        ── (Authentication, Token Issuance, Refresh Tokens)
-      ├── user        ── (Learner/Creator Profiles, Role Upgrades, Public Profiles)
-      ├── resource    ── (Marketplace Catalog, PDF Uploads, Landing Aggregations, Reviews)
-      ├── payment     ── (Purchases, Razorpay Integration, Admin Refunds)
-      ├── discussion  ── (Content Q&A Threads, Verified Creator Replies, Upvotes)
-      └── mentorship  ── (1:1 Live Session Scheduling & Jitsi Video Call Integration)
+com.learnhub.backend
+ ├── common           ── (Cross-cutting JWT utilities, SecurityConfig, CorsConfig, GlobalExceptionHandler)
+ └── modules
+      ├── auth        ── (Authentication, JWT Token Issuance, Refresh Tokens)
+      ├── user        ── (Learner/Creator Profiles, Role Upgrades, Public Creator Profiles)
+      ├── resource    ── (Catalog REST APIs, PDF Uploads, Landing Page Aggregators, Reviews)
+      ├── payment     ── (Purchases, Razorpay Payment Gateway, Admin Refund Controller)
+      ├── discussion  ── (Content Q&A Threads, Verified Creator Replies, Upvote Counters)
+      └── mentorship  ── (1:1 Live Session Booking & Jitsi Video Call Integration)
 ```
 
 ---
 
-## 📦 Modular Monolith Package Structure
+## 📦 Package & Module Structure
 
 ```
 project-backend-Java/src/main/java/com/learnhub/backend/
 ├── common/
 │   ├── config/         # SecurityConfig, CorsConfig, OpenApiConfig
-│   ├── dto/            # ApiResponse standard wrapper
+│   ├── dto/            # ApiResponse standard JSON wrapper
 │   ├── exception/      # GlobalExceptionHandler, ResourceNotFoundException, BadRequestException
-│   └── util/           # JwtTokenProvider, SecurityUtils (Ownership Validation)
+│   └── util/           # JwtTokenProvider, SecurityUtils (Ownership Validation Helper)
 └── modules/
     ├── auth/           # AuthController, AuthService, JwtAuthResponse, LoginRequest, RegisterRequest
     ├── user/           # UserController, ProfileController, PublicCreatorProfileController, User Entity
@@ -75,76 +66,48 @@ project-backend-Java/src/main/java/com/learnhub/backend/
 
 ---
 
-## 🎨 Frontend Structure
-
-```
-project-frontend-react/
-├── public/             # Static public assets
-├── src/
-│   ├── assets/         # Images and SVG icons
-│   ├── components/     # MarketplaceCard, ProfileSidebar, LearnerDashboard, CreatorDashboard
-│   ├── pages/          # LandingPage, MarketplacePage, ResourceDetailPage, CreatorProfilePage, AdminDashboardPage
-│   ├── routes/         # AppRoutes (Global Route Protection Guards)
-│   ├── utils/          # api.js (Axios instance with Bearer JWT Interceptor)
-│   ├── App.jsx         # Main application orchestrator & state manager
-│   └── main.jsx        # React DOM entry point
-├── index.html
-├── package.json
-└── vite.config.js
-```
-
----
-
 ## 🛠️ Technology Stack
 
-Verified directly from project build configuration:
+Verified directly from [`pom.xml`](pom.xml):
 
-### Backend Stack ([`pom.xml`](pom.xml))
 * **Java Version**: `17`
-* **Spring Boot**: `4.1.0`
-* **Data Access**: Spring Data JPA & Hibernate (`PostgreSQLDialect`)
+* **Spring Boot Framework**: `4.1.0`
+* **Data Access & ORM**: Spring Data JPA & Hibernate (`PostgreSQLDialect`)
 * **Database**: PostgreSQL (v14+)
-* **Security**: Spring Security + JWT (`jjwt-api`, `jjwt-impl`, `jjwt-jackson` 0.11.5)
-* **API Specs**: `springdoc-openapi-starter-webmvc-ui` `2.8.5`
-* **Build System**: Maven (`mvnw` / `mvnw.cmd`)
-
-### Frontend Stack ([`package.json`](../project-frontend-react/package.json))
-* **Framework**: React `^18.3.1`
-* **Build Tool**: Vite `^6.1.0`
-* **Routing**: React Router DOM `^7.1.5`
-* **HTTP Client**: Axios `^1.7.9`
-* **Styling**: Tailwind CSS `^3.4.17` + Lucide React Icons `^0.475.0`
+* **Security & Token Management**: Spring Security + Stateless JWT (`jjwt-api`, `jjwt-impl`, `jjwt-jackson` `0.11.5`)
+* **API Specs & UI**: `springdoc-openapi-starter-webmvc-ui` `2.8.5`
+* **Build & Dependency Management**: Maven Wrapper (`mvnw` / `mvnw.cmd`)
 
 ---
 
 ## 🗄️ Database Architecture & Initialization
 
-LearnHub uses **automated PostgreSQL database initialization** without requiring manual SQL script execution:
+LearnHub Backend uses **automated PostgreSQL database initialization** via Spring Boot properties:
 
 1. **Database Creation**: The developer creates an empty PostgreSQL database named `learnhub_db`.
-2. **Schema Creation ([`schema.sql`](src/main/resources/schema.sql))**: Spring Boot (`spring.sql.init.mode=always`) executes `schema.sql` on startup, creating all 9 tables (`users`, `categories`, `contents`, `purchases`, `questions`, `discussion_replies`, `doubt_sessions`, `reviews`, `refresh_tokens`).
-3. **Data Seeding ([`data.sql`](src/main/resources/data.sql))**: Hibernate (`spring.jpa.defer-datasource-initialization=true`) runs `data.sql` after table creation, populating seed users, categories, study materials, student reviews, Q&A threads, and mentorship sessions using `ON CONFLICT (id) DO NOTHING`.
+2. **Schema Creation ([`schema.sql`](src/main/resources/schema.sql))**: Executed automatically on startup (`spring.sql.init.mode=always`), creating all 9 tables (`users`, `categories`, `contents`, `purchases`, `questions`, `discussion_replies`, `doubt_sessions`, `reviews`, `refresh_tokens`).
+3. **Data Seeding ([`data.sql`](src/main/resources/data.sql))**: Executed automatically after schema creation (`spring.jpa.defer-datasource-initialization=true`), populating categories, demo users, study materials, student reviews, Q&A threads, and doubt sessions using `ON CONFLICT (id) DO NOTHING`.
 
 ---
 
-## 🔒 Security, Auth & Ownership Validation
+## 🔒 Security, Authentication & Ownership Validation
 
-* **Stateless Authentication**: Powered by Spring Security and JWT Bearer tokens.
-* **Public Unauthenticated Routes**: Strictly limited to `/api/auth/**` and `/api/public/**`.
-* **Protected Routes**: All workspace APIs (`/api/contents/**`, `/api/creators/**`, `/api/purchases/**`, `/api/payment/**`, `/api/sessions/**`, `/api/qa/**`, `/api/users/**`) require valid JWT authentication.
-* **Ownership Validation**: Enforced via `SecurityUtils.validateOwnershipById(...)` (for profile edits) and `SecurityUtils.validateOwnership(creatorEmail)` (for creator content CRUD operations).
+* **Stateless Authentication**: Powered by Spring Security filter chain and JWT Bearer tokens.
+* **Public Unauthenticated Endpoints**: Strictly limited to `/api/auth/**` and `/api/public/**`.
+* **Protected Endpoints**: All non-public APIs (`/api/contents/**`, `/api/creators/**`, `/api/purchases/**`, `/api/payment/**`, `/api/sessions/**`, `/api/qa/**`, `/api/users/**`) require Bearer JWT authentication.
+* **Ownership Validation**: Enforced via `SecurityUtils.validateOwnershipById(...)` (for user profile edits) and `SecurityUtils.validateOwnership(creatorEmail)` (for creator content CRUD operations).
 
 ---
 
 ## 💳 Payment Gateway Integration
 
-* **Implementation**: Integrated with Razorpay Order API (`RazorpayClient`) for real payment creation, accompanied by a verified payment verification endpoint (`POST /api/payment/verify`) and administrative **Process Refund** functionality (`POST /api/admin/transactions/{id}/refund`).
+* **Implementation**: Integrated with Razorpay Order API (`RazorpayClient`) for real payment creation, accompanied by a payment verification endpoint (`POST /api/payment/verify`) and administrative **Process Refund** functionality (`POST /api/admin/transactions/{id}/refund`).
 
 ---
 
-## 📖 API Documentation (Swagger)
+## 📖 API Documentation (Swagger / OpenAPI)
 
-Verified from application OpenAPI configuration:
+Verified from backend OpenAPI configuration:
 
 * **Swagger UI URL**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
 * **OpenAPI Specs JSON**: [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
@@ -162,7 +125,6 @@ Supported in [`application.properties`](src/main/resources/application.propertie
 | `SPRING_DATASOURCE_PASSWORD` | `postgres` | Database Password |
 | `JWT_SECRET` | `learnhub-secret-key-for-jwt-signing...` | HS256 JWT Signing Key (min 256 bits) |
 | `JWT_EXPIRATION` | `86400000` (24 Hours) | JWT Access Token Expiry in ms |
-| `VITE_API_BASE_URL` | `http://localhost:8080` | Frontend API Base URL |
 
 ---
 
@@ -170,13 +132,13 @@ Supported in [`application.properties`](src/main/resources/application.propertie
 
 Verified directly from [`data.sql`](src/main/resources/data.sql):
 
-| Role | Email Address | Password | Functionality |
+| Role | Email Address | Password | Privileges |
 | :--- | :--- | :--- | :--- |
-| **Learner** | `arjun.mehta@learnhub.com` | `password123` | Browse Marketplace, Purchase Guides, Read Inline, Ask Q&A |
-| **Learner** | `priya.sharma@learnhub.com` | `password123` | Browse Marketplace, Write Reviews, Ask Q&A, Book Mentorship |
-| **Creator** | `rohan.verma@learnhub.com` | `password123` | Content Studio Uploads, PDF Management Grid, Reply to Q&A |
-| **Creator** | `neha.gupta@learnhub.com` | `password123` | System Design Blueprint Publishing, Earn Revenue |
-| **Admin** | `admin@learnhub.com` | `admin123` | Admin Panel Oversight, User/Resource/Txn Grids, Process Refunds |
+| **Learner** | `arjun.mehta@learnhub.com` | `password123` | Read APIs, Purchase Endpoints, Q&A |
+| **Learner** | `priya.sharma@learnhub.com` | `password123` | Read APIs, Reviews, Q&A, Doubt Sessions |
+| **Creator** | `rohan.verma@learnhub.com` | `password123` | Content CRUD, PDF Uploads, Q&A Replies |
+| **Creator** | `neha.gupta@learnhub.com` | `password123` | System Design Content Publishing |
+| **Admin** | `admin@learnhub.com` | `admin123` | Admin User/Resource/Txn Endpoints, Refunds |
 
 ---
 
@@ -187,7 +149,7 @@ Verified directly from [`data.sql`](src/main/resources/data.sql):
 CREATE DATABASE learnhub_db;
 ```
 
-### 2. Launch Backend
+### 2. Run Backend Application
 ```bash
 # Windows
 .\mvnw.cmd spring-boot:run
@@ -195,24 +157,20 @@ CREATE DATABASE learnhub_db;
 # Linux / macOS
 ./mvnw spring-boot:run
 ```
-
-### 3. Launch Frontend
-```bash
-cd project-frontend-react
-npm install
-npm run dev
-```
+*Backend server starts at `http://localhost:8080`.*
 
 ---
 
-## 🔮 Future Enhancements
+## ❓ Troubleshooting & FAQs
 
-* Microservices decomposition for billing and streaming modules.
-* Interactive code sandbox playground integration inside the PDF viewer.
-* Live WebSocket chat for mentorship doubt sessions.
+* **Issue: Database connection fails on startup**
+  * *Solution*: Ensure PostgreSQL is running on port 5432 and database `learnhub_db` exists.
+* **Issue: `JWT_SECRET` warning**
+  * *Solution*: Set environment variable `JWT_SECRET` to a string of at least 32 characters.
 
 ---
 
-## 👥 Contributors
+## 👥 Contribution Guidelines
 
-* **LearnHub Development Team** (Team Group No. 7)
+* Follow Modular Monolith package organization (`common/`, `modules/<domain>`).
+* Ensure all REST controllers pass `@PreAuthorize("isAuthenticated()")` or role-based security checks.
