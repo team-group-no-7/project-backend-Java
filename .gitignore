@@ -35,10 +35,6 @@ build/
 node_modules/
 
 ### Uploaded files — keep folder structure but ignore actual files ###
-uploads/**/*.pdf
-uploads/**/*.mp4
-uploads/**/*.png
-uploads/**/*.jpg
-uploads/**/*.jpeg
-!uploads/**/.gitkeep
+uploads/*
+!uploads/.gitkeep
 *.log
