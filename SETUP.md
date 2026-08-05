@@ -1,84 +1,114 @@
-# 🚀 LearnHub Java Backend Setup & Run Guide
+# 🚀 LearnHub Backend — Setup & Development Guide
 
-Welcome to the **LearnHub** Spring Boot API project. This backend is structured as a **Modular Monolith** (vertical domain package design) so that modules can easily be converted into microservices later.
-
----
-
-## 🛠️ Prerequisites
-Ensure you have the following installed locally:
-* **Java Development Kit (JDK)**: Version 17 or higher.
-* **Database**: PostgreSQL (either locally installed or running via Docker).
-* **IDE**: IntelliJ IDEA (recommended), Eclipse, or VS Code.
-* **REST Client**: Postman (for testing endpoints).
+This guide provides step-by-step instructions for setting up and running the **LearnHub Java Backend** (Spring Boot + PostgreSQL) on your local development machine.
 
 ---
 
-## 🗄️ Database Setup
+## 🛠️ Step 1: Prerequisites Verification
 
-### Option A: Running PostgreSQL inside a Docker Container (Recommended)
-If you have Docker Desktop installed, navigate to the root folder of the backend project and run:
+Ensure you have the following software installed:
+
+1. **Java Development Kit (JDK)**: Version 17 or higher (`java -version`).
+2. **PostgreSQL Database**: Version 14 or higher (`psql --version`).
+3. **Maven Wrapper**: Included in repository (`mvnw` / `mvnw.cmd`).
+4. **Git**: Version control client.
+
+---
+
+## 📥 Step 2: Clone Backend Repository
+
 ```bash
-docker compose up -d
+git clone https://github.com/team-group-no-7/project-backend-Java.git
+cd project-backend-Java
 ```
-*This downloads PostgreSQL, maps it to port `5432`, sets the default credentials to `postgres/postgres`, and initializes the database `learnhub_db` automatically.*
-
-### Option B: Local PostgreSQL Installation
-If you do not have Docker installed:
-1. Open pgAdmin 4 or the `psql` shell tool.
-2. Create an empty database named `learnhub_db`:
-   ```sql
-   CREATE DATABASE learnhub_db;
-   ```
-3. If your local Postgres uses a password other than `postgres`, configure it by setting an environment variable before launching (so you don't modify the committed properties file):
-   * **Windows (PowerShell)**:
-     ```powershell
-     $env:SPRING_DATASOURCE_PASSWORD="your_custom_password"
-     ```
-   * **macOS / Linux**:
-     ```bash
-     export SPRING_DATASOURCE_PASSWORD="your_custom_password"
-     ```
 
 ---
 
-## 🏁 Running the Application
+## 🗄️ Step 3: Database Creation
 
-Open a terminal in the root of the Java backend directory and execute:
+Open PostgreSQL using `psql` command line or **pgAdmin**:
 
-* **Windows**:
+```sql
+CREATE DATABASE learnhub_db;
+```
+
+---
+
+## ⚙️ Step 4: Automated Database Initialization
+
+No manual SQL execution is required! The backend application properties configure automated execution:
+
+* **Schema Execution**: `spring.sql.init.mode=always` automatically runs [`schema.sql`](src/main/resources/schema.sql) to create all 9 core PostgreSQL tables (`users`, `categories`, `contents`, `purchases`, `questions`, `discussion_replies`, `doubt_sessions`, `reviews`, `refresh_tokens`).
+* **Data Seeding Execution**: `spring.jpa.defer-datasource-initialization=true` automatically runs [`data.sql`](src/main/resources/data.sql) after schema creation, populating seed users, categories, study materials, student reviews, Q&A threads, and mentorship sessions using `ON CONFLICT (id) DO NOTHING`.
+* **DDL Auto**: `spring.jpa.hibernate.ddl-auto=update` verifies JPA entity definitions against database tables.
+
+---
+
+## 🔧 Step 5: Application Properties & Custom Credentials
+
+In [`src/main/resources/application.properties`](src/main/resources/application.properties), default connection settings are:
+
+```properties
+spring.datasource.url=jdbc:postgresql://localhost:5432/learnhub_db
+spring.datasource.username=postgres
+spring.datasource.password=postgres
+```
+
+If your local PostgreSQL installation uses a custom password, set environment variables in your terminal before launching Spring Boot (without modifying committed code):
+
+* **Windows (PowerShell)**:
   ```powershell
-  .\mvnw spring-boot:run
+  $env:SPRING_DATASOURCE_PASSWORD="your_custom_password"
+  ```
+* **macOS / Linux**:
+  ```bash
+  export SPRING_DATASOURCE_PASSWORD="your_custom_password"
+  ```
+
+---
+
+## ☕ Step 6: Running the Java Backend
+
+Open a terminal in the `project-backend-Java` root directory and execute:
+
+* **Windows (PowerShell / CMD)**:
+  ```powershell
+  .\mvnw.cmd spring-boot:run
   ```
 * **macOS / Linux**:
   ```bash
   ./mvnw spring-boot:run
   ```
 
-Upon startup, **Hibernate** will auto-create the database tables matching the schema, and [data.sql](src/main/resources/data.sql) will seed the lookup database entries automatically.
+*The backend REST API server will start at `http://localhost:8080`.*
 
 ---
 
-## 📡 Testing the API Endpoints
+## 📡 Step 7: Swagger API Documentation
 
-Because Spring Security is active, all requests must be authenticated.
+Once the backend is running, inspect and test REST endpoints using Swagger UI:
 
-### 🔑 Credentials (Local Dev Setup)
-* **Default Username**: `admin`
-* **Default Password**: `admin123`
+* **Swagger UI**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+* **OpenAPI Specs**: [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
 
-### 🧪 Testing in the Browser
-Open your browser and navigate to one of the domain module status endpoints. The browser will prompt you for a username and password. Enter `admin` / `admin123`:
+---
 
-* **Authentication Module**: [http://localhost:8080/api/auth/status](http://localhost:8080/api/auth/status)
-* **User Profile Module**: [http://localhost:8080/api/users/status](http://localhost:8080/api/users/status)
-* **Content Catalog Module**: [http://localhost:8080/api/catalog/status](http://localhost:8080/api/catalog/status)
-* **Billing Module**: [http://localhost:8080/api/billing/status](http://localhost:8080/api/billing/status)
-* **Mentorship Module**: [http://localhost:8080/api/mentorship/status](http://localhost:8080/api/mentorship/status)
-* **Discussion Module**: [http://localhost:8080/api/discussion/status](http://localhost:8080/api/discussion/status)
+## 🔑 Step 8: Default Accounts for API Testing
 
-### 📬 Testing in Postman
-1. Create a new request in Postman.
-2. Go to the **Authorization** tab.
-3. Select **Basic Auth** from the dropdown menu.
-4. Input Username: `admin` and Password: `admin123`.
-5. Enter the target endpoint URL and click **Send**.
+Verified from [`data.sql`](src/main/resources/data.sql):
+
+| Role | Email | Password | Privileges |
+| :--- | :--- | :--- | :--- |
+| **Learner** | `arjun.mehta@learnhub.com` | `password123` | Read APIs, Purchases, Q&A |
+| **Learner** | `priya.sharma@learnhub.com` | `password123` | Read APIs, Reviews, Q&A, Mentorship |
+| **Creator** | `rohan.verma@learnhub.com` | `password123` | Content CRUD, PDF Uploads, Q&A Replies |
+| **Admin** | `admin@learnhub.com` | `admin123` | Admin REST APIs, Refund Actions |
+
+---
+
+## ❓ Step 9: Troubleshooting
+
+* **Problem: PostgreSQL Connection Refused (`PSQLException: Connection refused`)**
+  * *Solution*: Ensure PostgreSQL service is running on port 5432 and database `learnhub_db` exists.
+* **Problem: Port 8080 in use**
+  * *Solution*: Stop any process using port 8080 (`netstat -ano | findstr 8080`).

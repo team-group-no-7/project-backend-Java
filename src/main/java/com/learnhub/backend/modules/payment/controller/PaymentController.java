@@ -1,0 +1,110 @@
+package com.learnhub.backend.modules.payment.controller;
+
+import com.learnhub.backend.modules.payment.dto.OrderRequestDto;
+import com.learnhub.backend.modules.payment.dto.OrderResponseDto;
+import com.learnhub.backend.modules.payment.dto.PaymentVerificationRequestDto;
+import com.learnhub.backend.modules.payment.dto.PaymentVerificationResponseDto;
+import com.learnhub.backend.modules.payment.entity.Purchase;
+import com.learnhub.backend.modules.payment.service.RazorpayService;
+import com.learnhub.backend.modules.user.repository.UserRepository;
+import com.learnhub.backend.common.dto.ApiResponse;
+import com.learnhub.backend.common.util.SecurityUtils;
+import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+/**
+ * PaymentController — REST Controller for Billing & Razorpay Payment Integration.
+ * Base URL: /api/payment
+ *
+ * Implemented in pure Java with explicit constructor dependency injection (No Lombok).
+ * Handles order creation, signature verification, and user purchase history.
+ */
+@RestController
+@RequestMapping("/api/payment")
+@PreAuthorize("isAuthenticated()")
+public class PaymentController {
+
+    private final RazorpayService razorpayService;
+    private final UserRepository userRepository;
+
+    // Explicit constructor dependency injection (No Lombok)
+    public PaymentController(RazorpayService razorpayService, UserRepository userRepository) {
+        this.razorpayService = razorpayService;
+        this.userRepository = userRepository;
+    }
+
+    /**
+     * POST /api/payment/create-order
+     * Initializes a new Razorpay checkout transaction.
+     */
+    @PostMapping("/create-order")
+    public ResponseEntity<ApiResponse<OrderResponseDto>> createOrder(@Valid @RequestBody OrderRequestDto request) {
+        OrderResponseDto orderResponse = razorpayService.createOrder(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Razorpay order created successfully", orderResponse));
+    }
+
+    /**
+     * POST /api/payment/verify
+     * Verifies Razorpay HMAC signature and unlocks content access.
+     */
+    @PostMapping("/verify")
+    public ResponseEntity<ApiResponse<PaymentVerificationResponseDto>> verifyPayment(@Valid @RequestBody PaymentVerificationRequestDto request) {
+        PaymentVerificationResponseDto response = razorpayService.verifyPayment(request);
+        return ResponseEntity.ok(ApiResponse.success("Payment verified successfully", response));
+    }
+
+    /**
+     * GET /api/payment/my-purchases & GET /api/payment/purchases
+     * Returns purchase history DTOs for the currently authenticated user based on JWT context.
+     */
+    @GetMapping({"/my-purchases", "/purchases"})
+    public ResponseEntity<ApiResponse<List<com.learnhub.backend.modules.payment.dto.response.PurchaseResponse>>> getMyPurchases() {
+        String currentEmail = SecurityUtils.getCurrentUserEmail();
+        com.learnhub.backend.modules.user.entity.User currentUser = userRepository.findByEmail(currentEmail)
+                .orElseThrow(() -> new com.learnhub.backend.common.exception.ResourceNotFoundException("Authenticated user context not found"));
+
+        List<Purchase> purchases = razorpayService.getPurchasesForUser(currentUser.getId());
+        List<com.learnhub.backend.modules.payment.dto.response.PurchaseResponse> responseList = purchases.stream()
+                .map(p -> new com.learnhub.backend.modules.payment.dto.response.PurchaseResponse(
+                        p.getId(),
+                        p.getContent() != null ? p.getContent().getId() : null,
+                        p.getContent() != null ? p.getContent().getTitle() : "Learning Resource",
+                        p.getContent() != null && p.getContent().getCategory() != null ? p.getContent().getCategory().getName() : "General",
+                        p.getAmountPaid(),
+                        p.getPaymentStatus() != null ? p.getPaymentStatus() : "SUCCESS",
+                        p.getPurchasedAt()
+                ))
+                .collect(java.util.stream.Collectors.toList());
+
+        return ResponseEntity.ok(ApiResponse.success("My purchases retrieved successfully", responseList));
+    }
+
+    /**
+     * GET /api/payment/purchases/{userId}
+     * Returns purchase history DTOs for a specific user after verifying ownership/admin authority.
+     */
+    @GetMapping("/purchases/{userId:\\d+}")
+    public ResponseEntity<ApiResponse<List<com.learnhub.backend.modules.payment.dto.response.PurchaseResponse>>> getUserPurchases(@PathVariable Long userId) {
+        SecurityUtils.validateOwnershipByUserId(userId, userRepository);
+        List<Purchase> purchases = razorpayService.getPurchasesForUser(userId);
+        List<com.learnhub.backend.modules.payment.dto.response.PurchaseResponse> responseList = purchases.stream()
+                .map(p -> new com.learnhub.backend.modules.payment.dto.response.PurchaseResponse(
+                        p.getId(),
+                        p.getContent() != null ? p.getContent().getId() : null,
+                        p.getContent() != null ? p.getContent().getTitle() : "Learning Resource",
+                        p.getContent() != null && p.getContent().getCategory() != null ? p.getContent().getCategory().getName() : "General",
+                        p.getAmountPaid(),
+                        p.getPaymentStatus() != null ? p.getPaymentStatus() : "SUCCESS",
+                        p.getPurchasedAt()
+                ))
+                .collect(java.util.stream.Collectors.toList());
+
+        return ResponseEntity.ok(ApiResponse.success("User purchases retrieved successfully", responseList));
+    }
+}

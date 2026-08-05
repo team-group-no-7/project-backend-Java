@@ -33,3 +33,8 @@ build/
 .vscode/
 .metadata/
 node_modules/
+
+### Uploaded files — keep folder structure but ignore actual files ###
+uploads/*
+!uploads/.gitkeep
+*.log
