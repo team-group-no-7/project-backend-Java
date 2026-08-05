@@ -48,23 +48,16 @@ public class SecurityConfig {
             // Step 4: Define URL access rules
             .authorizeHttpRequests(auth -> auth
 
-                // PUBLIC ENDPOINTS — No JWT token required
+                // PUBLIC ENDPOINTS — No JWT token required (Landing page & authentication only)
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/public/**").permitAll()
+                .requestMatchers("/uploads/**").permitAll()
 
                 // Status check endpoints
                 .requestMatchers("/api/users/status").permitAll()
                 .requestMatchers("/api/creators/status").permitAll()
                 .requestMatchers("/api/creator/content/status").permitAll()
                 .requestMatchers("/api/catalog/status").permitAll()
-
-                // Public content, creator profile, landing page, and file endpoints
-                .requestMatchers("/api/public/**").permitAll()
-                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/creators/{id}").permitAll()
-                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/creators/{id}/contents").permitAll()
-                .requestMatchers("/api/contents/**").permitAll()
-                .requestMatchers("/api/contents").permitAll()
-                .requestMatchers("/api/categories").permitAll()
-                .requestMatchers("/uploads/**").permitAll()
 
                 // Swagger/OpenAPI
                 .requestMatchers(
@@ -73,12 +66,15 @@ public class SecurityConfig {
                         "/swagger-ui.html"
                 ).permitAll()
 
-                // ROLE-PROTECTED ENDPOINTS
-                .requestMatchers("/api/creators/**").hasAnyRole("CREATOR", "ADMIN")
+                // ROLE-PROTECTED & CREATOR STUDIO ENDPOINTS
                 .requestMatchers("/api/creator/content/**").hasAnyRole("CREATOR", "ADMIN")
+                .requestMatchers("/api/creators/manage/**").hasAnyRole("CREATOR", "ADMIN")
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
-                // PROTECTED ENDPOINTS — JWT token required for everything else
+                // PROTECTED ENDPOINTS — JWT token required for Marketplace, Creator Profiles, Purchases, Mentorship, Q&A & User Profiles
+                .requestMatchers("/api/contents/**", "/api/contents").authenticated()
+                .requestMatchers("/api/categories").authenticated()
+                .requestMatchers("/api/creators/**").authenticated()
                 .requestMatchers("/api/payment/**").authenticated()
                 .requestMatchers("/api/purchases/**").authenticated()
                 .requestMatchers("/api/sessions/**", "/api/mentorship/**").authenticated()

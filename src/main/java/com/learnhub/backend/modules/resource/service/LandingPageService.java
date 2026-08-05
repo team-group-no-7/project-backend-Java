@@ -4,6 +4,7 @@ import com.learnhub.backend.modules.resource.dto.CategoryResponse;
 import com.learnhub.backend.modules.resource.dto.ContentSummaryResponse;
 import com.learnhub.backend.modules.resource.dto.LandingPageDataResponse;
 import com.learnhub.backend.modules.resource.dto.TopCreatorResponse;
+import com.learnhub.backend.modules.resource.entity.Review;
 
 import java.util.List;
 
@@ -21,4 +22,6 @@ public interface LandingPageService {
     List<CategoryResponse> getCategories();
 
     List<TopCreatorResponse> getTopCreators();
+
+    List<Review> getTopReviews();
 }

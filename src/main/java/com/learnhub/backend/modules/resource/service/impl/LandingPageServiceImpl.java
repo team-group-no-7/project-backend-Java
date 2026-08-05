@@ -33,13 +33,16 @@ public class LandingPageServiceImpl implements LandingPageService {
     private final ContentRepository contentRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
+    private final com.learnhub.backend.modules.resource.repository.ReviewRepository reviewRepository;
 
     public LandingPageServiceImpl(ContentRepository contentRepository,
                                   CategoryRepository categoryRepository,
-                                  UserRepository userRepository) {
+                                  UserRepository userRepository,
+                                  com.learnhub.backend.modules.resource.repository.ReviewRepository reviewRepository) {
         this.contentRepository = contentRepository;
         this.categoryRepository = categoryRepository;
         this.userRepository = userRepository;
+        this.reviewRepository = reviewRepository;
     }
 
     @Override
@@ -69,8 +72,16 @@ public class LandingPageServiceImpl implements LandingPageService {
     public List<ContentSummaryResponse> getFeaturedContents() {
         log.info("Fetching landing page featured contents");
         List<Content> contents = contentRepository.findByFeaturedTrue();
-        if (contents.isEmpty()) {
-            contents = contentRepository.findTop6ByOrderByRatingDesc();
+        if (contents.size() < 3) {
+            List<Content> topRated = contentRepository.findTop6ByOrderByRatingDesc();
+            if (!topRated.isEmpty()) {
+                contents = topRated;
+            } else {
+                contents = contentRepository.findAll();
+            }
+        }
+        if (contents.size() > 6) {
+            contents = contents.subList(0, 6);
         }
         return contents.stream().map(this::mapToContentSummary).collect(Collectors.toList());
     }
@@ -126,6 +137,16 @@ public class LandingPageServiceImpl implements LandingPageService {
         }
 
         return creatorResponses;
+    }
+
+    @Override
+    public List<com.learnhub.backend.modules.resource.entity.Review> getTopReviews() {
+        log.info("Fetching landing page top reviews");
+        List<com.learnhub.backend.modules.resource.entity.Review> reviews = reviewRepository.findAll();
+        if (reviews.size() > 6) {
+            return reviews.subList(0, 6);
+        }
+        return reviews;
     }
 
     private ContentSummaryResponse mapToContentSummary(Content content) {

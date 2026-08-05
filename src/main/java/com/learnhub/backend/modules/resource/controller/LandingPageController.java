@@ -80,4 +80,14 @@ public class LandingPageController {
         List<TopCreatorResponse> creators = landingPageService.getTopCreators();
         return ResponseEntity.ok(ApiResponse.success("Top creators fetched successfully", creators));
     }
+
+    /**
+     * GET /api/public/reviews
+     * Returns top student reviews from database.
+     */
+    @GetMapping("/reviews")
+    public ResponseEntity<ApiResponse<List<com.learnhub.backend.modules.resource.entity.Review>>> getTopReviews() {
+        List<com.learnhub.backend.modules.resource.entity.Review> reviews = landingPageService.getTopReviews();
+        return ResponseEntity.ok(ApiResponse.success("Top reviews fetched successfully", reviews));
+    }
 }
