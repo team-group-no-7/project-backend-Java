@@ -106,9 +106,29 @@ Verified from [`data.sql`](src/main/resources/data.sql):
 
 ---
 
-## ❓ Step 9: Troubleshooting
+## 🐳 Step 10: Running Backend with Docker & Docker Compose
+
+For a containerized setup suitable for CDAC viva demonstration:
+
+### Option A: Run Full Stack via Docker Compose (Recommended)
+```bash
+docker compose up --build
+```
+
+### Option B: Build & Run Backend Docker Image Individually
+```bash
+# Build Docker Image
+docker build -t learnhub-backend .
+
+# Run Container
+docker run -p 8080:8080 --name learnhub-backend learnhub-backend
+```
+
+---
+
+## ❓ Step 11: Troubleshooting
 
 * **Problem: PostgreSQL Connection Refused (`PSQLException: Connection refused`)**
-  * *Solution*: Ensure PostgreSQL service is running on port 5432 and database `learnhub_db` exists.
+  * *Solution*: Ensure PostgreSQL service is running on port 5432 and database `learnhub_db` exists (or ensure `postgres` container is healthy in Docker Compose).
 * **Problem: Port 8080 in use**
   * *Solution*: Stop any process using port 8080 (`netstat -ano | findstr 8080`).

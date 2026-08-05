@@ -170,6 +170,28 @@ CREATE DATABASE learnhub_db;
 
 ---
 
+## 🐳 Docker Containerization Guide
+
+LearnHub Backend includes a beginner-friendly `Dockerfile` and `docker-compose.yml` suitable for CDAC project demonstrations and viva:
+
+### 1. Build Backend Docker Image
+```bash
+docker build -t learnhub-backend .
+```
+
+### 2. Run Backend Container
+```bash
+docker run -p 8080:8080 --name learnhub-backend-app learnhub-backend
+```
+
+### 3. Run Full Stack with Docker Compose
+```bash
+docker compose up --build
+```
+*Starts PostgreSQL (`5432`), Spring Boot Backend (`8080`), and React Frontend (`5173`).*
+
+---
+
 ## 👥 Contribution Guidelines
 
 * Follow Modular Monolith package organization (`common/`, `modules/<domain>`).

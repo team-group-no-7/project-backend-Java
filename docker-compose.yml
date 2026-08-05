@@ -1,18 +1,72 @@
+# ====================================================================
+# LearnHub Docker Compose Configuration
+# Orchestrates PostgreSQL, Spring Boot Backend, and React Frontend
+# Simple & Beginner-Friendly Setup for CDAC Project Viva & Demonstration
+# ====================================================================
+
 version: '3.8'
 
 services:
-  db:
+  # ------------------------------------------------------------------
+  # 1. PostgreSQL Database Service
+  # ------------------------------------------------------------------
+  postgres:
     image: postgres:15-alpine
     container_name: learnhub-postgres
     restart: always
     environment:
+      - POSTGRES_DB=learnhub_db
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=learnhub_db
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d learnhub_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
+  # ------------------------------------------------------------------
+  # 2. Spring Boot Java Backend Service
+  # ------------------------------------------------------------------
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: learnhub-backend
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/learnhub_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - JWT_SECRET=learnhub-secret-key-for-jwt-signing-must-be-very-long
+      - JWT_EXPIRATION=86400000
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ------------------------------------------------------------------
+  # 3. React Vite Frontend Service
+  # ------------------------------------------------------------------
+  frontend:
+    build:
+      context: ../project-frontend-react
+      dockerfile: Dockerfile
+    container_name: learnhub-frontend
+    restart: always
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8080
+    depends_on:
+      - backend
+
+# --------------------------------------------------------------------
+# Data Volume Persistence for PostgreSQL
+# --------------------------------------------------------------------
 volumes:
   postgres_data:
