@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS contents (
     preview_text TEXT,
     content_body TEXT,
     file_url VARCHAR(255),
+    thumbnail_url VARCHAR(550),
     price DECIMAL(10, 2) DEFAULT 0.00,
     type VARCHAR(100),
     level VARCHAR(100),
